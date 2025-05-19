@@ -13,7 +13,7 @@ export default defineConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "/images/sockudo-logo.png", // Path relative to the 'public' directory in `docs`
+    logo: "/images/logo.svg", // Path relative to the 'public' directory in `docs`
 
     nav: [
       { text: "Home", link: "/" },
