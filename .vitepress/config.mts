@@ -7,7 +7,7 @@ export default defineConfig({
     "A high-performance, Pusher-compatible WebSockets server written in Rust.",
   base: "/", // Adjust if you're deploying to a subdirectory like username.github.io/sockudo-docs/
   head: [
-    ["link", { rel: "icon", href: "/sockudo-docs/favicon.ico" }], // Adjust path if base is different
+    ["link", { rel: "icon", href: "/images/favicon.ico" }], // Adjust path if base is different
     // You can add other meta tags here
   ],
 
