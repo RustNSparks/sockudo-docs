@@ -20,7 +20,7 @@ export default defineConfig({
       { text: "Guide", link: "/guide/getting-started" },
       { text: "API Reference", link: "/api/" },
       { text: "Concepts", link: "/concepts/architecture" },
-      { text: "Integrations", link: "/integrations/laravel-echo" },
+      { text: "Integrations", link: "/integrations/index" },
       {
         text: "Links",
         items: [
@@ -53,7 +53,7 @@ export default defineConfig({
             { text: "Metrics", link: "/guide/configuration/metrics" },
             { text: "Rate Limiter", link: "/guide/configuration/rate-limiter" },
             { text: "SSL/TLS", link: "/guide/configuration/ssl" },
-            { text: "Cluster", link: "/guide/configuration/cluster" },
+            // { text: "Cluster", link: "/guide/configuration/cluster" },
             { text: "Webhooks", link: "/guide/configuration/webhooks" },
             {
               text: "Other Options",
@@ -113,15 +113,23 @@ export default defineConfig({
           ],
         },
       ],
-      "/integrations/": [
+      '/integrations/': [
         {
-          text: "Client Integrations",
+          text: 'Getting Started with Integrations',
+          // collapsed: true, // Set to false if you want it open by default
+          items: [
+            { text: 'Introduction', link: '/integrations/' } // Links to docs/integrations/index.md
+          ]
+        },
+        {
+          text: 'Client-Side Libraries',
           collapsed: false,
           items: [
-            { text: "Laravel Echo", link: "/integrations/laravel-echo" },
-            { text: "Pusher JS", link: "/integrations/pusher-js" },
-            { text: "Other Clients", link: "/integrations/other-clients" },
-          ],
+            { text: 'Laravel Echo', link: '/integrations/laravel-echo' },
+            { text: 'PusherJS (Standalone)', link: '/integrations/pusher-js' },
+            // Assuming your other-clients.md has a heading like "## Client-Side Libraries (for Subscribing to Events)"
+            { text: 'Mobile & Other Clients', link: '/integrations/other-clients#client-side-libraries-for-subscribing-to-events' }
+          ]
         },
       ],
       "/about/": [

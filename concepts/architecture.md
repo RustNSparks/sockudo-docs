@@ -2,7 +2,7 @@
 
 Sockudo is designed with a modular and extensible architecture to provide a high-performance, scalable, and maintainable WebSocket server. Understanding its core components can help you configure it effectively and potentially extend its functionality.
 
-The main components, as also highlighted in the `README.md` [cite: uploaded:rustnsparks/sockudo/sockudo-a47486991577778dec2033c359ae40ff1cbee148/README.md] and visible in the `src/main.rs` [cite: uploaded:rustnsparks/sockudo/sockudo-a47486991577778dec2033c359ae40ff1cbee148/src/main.rs] initialization, include:
+The main components, as also highlighted in the `README.md` and visible in the `src/main.rs` initialization, include:
 
 ## 1. Core Server (`main.rs`)
 

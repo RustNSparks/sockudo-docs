@@ -8,7 +8,7 @@ Before you begin, ensure you have the following installed on your system:
 
 * **Rust**: Version 1.85 or newer. You can install Rust via [rustup](https://rustup.rs/).
     ```bash
-    curl --proto '=https' --tlsv1.2 -sSf [https://sh.rustup.rs](https://sh.rustup.rs) | sh
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     ```
     If you already have Rust, ensure it's up to date:
     ```bash
@@ -27,7 +27,7 @@ Follow these steps to download and build Sockudo:
 
     Open your terminal and clone the Sockudo repository from GitHub:
     ```bash
-    git clone [https://github.com/RustNSparks/sockudo.git](https://github.com/RustNSparks/sockudo.git)
+    git clone https://github.com/RustNSparks/sockudo.git
     cd sockudo
     ```
 

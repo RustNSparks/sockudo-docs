@@ -10,7 +10,7 @@ When using any Pusher-compatible library, you'll typically need to configure the
 
 * **Host**: The hostname or IP address of your Sockudo server.
 * **Port**: The port your Sockudo server is listening on (e.g., `6001`).
-* **Scheme**: `http` (for `ws://` connections) or `https" (for `wss://` connections if SSL is enabled).
+* **Scheme**: `http` (for `ws://` connections) or `https` (for `wss://` connections if SSL is enabled).
 * **App ID**: Your Sockudo application's ID.
 * **App Key**: Your Sockudo application's key.
 * **App Secret**: Your Sockudo application's secret (this is **only** for server-side libraries that trigger events or for your auth server; never expose the secret in client-side code).
@@ -25,13 +25,13 @@ These libraries are used in your backend application to send messages to Sockudo
 
 The official `pusher-http-php` library can be used.
 
-
 **Installation (via Composer):**
 ```bash
 composer require pusher/pusher-php-server
+```
 
-
-Example Usage:
+**Example Usage:**
+```php
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
@@ -59,15 +59,19 @@ $pusher->trigger('my-channel', 'my-event', $data);
 
 echo "Event triggered successfully!\n";
 ?>
+```
 
+### Node.js (Backend)
 
-Node.js (Backend)
 The official pusher Node.js library can be used on the server-side.
-Installation (via npm):
+
+**Installation (via npm):**
+```bash
 npm install pusher
+```
 
-
-Example Usage:
+**Example Usage:**
+```javascript
 const Pusher = require('pusher');
 
 const pusher = new Pusher({
@@ -78,7 +82,7 @@ const pusher = new Pusher({
   host: 'localhost',    // Your Sockudo host
   port: 6001,           // Your Sockudo port
   useTLS: false,        // Set to true if using https/wss
-  // encrypted: false // Deprecated, use useTLS
+  // encrypted: false   // Deprecated, use useTLS
 });
 
 pusher.trigger("my-channel", "my-event", { message: "Hello from Node.js backend!" })
@@ -88,15 +92,19 @@ pusher.trigger("my-channel", "my-event", { message: "Hello from Node.js backend!
   .catch(error => {
     console.error("Error triggering event:", error);
   });
+```
 
+### Python
 
-Python
 Use the pusher Python library.
-Installation (via pip):
+
+**Installation (via pip):**
+```bash
 pip install pusher
+```
 
-
-Example Usage:
+**Example Usage:**
+```python
 import pusher
 
 pusher_client = pusher.Pusher(
@@ -111,15 +119,22 @@ pusher_client = pusher.Pusher(
 
 pusher_client.trigger('my-channel', 'my-event', {'message': 'Hello from Python!'})
 print("Event triggered!")
+```
 
+### Other Server-Side Languages
 
-Other Server-Side Languages
 Pusher provides official or community-supported libraries for many other languages like Ruby, Java, Go, etc. The configuration principles remain the same: point the library to your Sockudo server's address and use your Sockudo app credentials.
-Client-Side Libraries (for Subscribing to Events)
+
+## Client-Side Libraries (for Subscribing to Events)
+
 Besides pusher-js (covered in its own section), you can use other Pusher-compatible client libraries for different platforms.
-Android (Java/Kotlin)
+
+### Android (Java/Kotlin)
+
 Use the pusher-java-client library.
-Configuration Snippet (conceptual):
+
+**Configuration Snippet (conceptual):**
+```java
 // import com.pusher.client.Pusher;
 // import com.pusher.client.PusherOptions;
 // import com.pusher.client.channel.Channel;
@@ -142,18 +157,21 @@ Channel channel = pusher.subscribe("my-channel");
 channel.bind("my-event", (event) -> {
     // Log.i("Pusher", "Received event with data: " + event.getData());
 });
+```
 
+### iOS (Swift/Objective-C)
 
-iOS (Swift/Objective-C)
 Use the pusher-swift library.
-Configuration Snippet (conceptual, Swift):
+
+**Configuration Snippet (conceptual, Swift):**
+```swift
 // import PusherSwift
 
 // let options = PusherClientOptions(
 //     host: .host("your_sockudo_host"),
 //     port: 6001, // Your Sockudo port
 //     useTLS: false // Set to true for wss://
-//     // authMethod: .endpoint(authEndpoint: "[https://your-app.com/pusher/auth](https://your-app.com/pusher/auth)") // For private/presence
+//     // authMethod: .endpoint(authEndpoint: "https://your-app.com/pusher/auth") // For private/presence
 // )
 
 // let pusher = Pusher(
@@ -169,10 +187,11 @@ Configuration Snippet (conceptual, Swift):
 //         // print("Received event: \(data)")
 //     }
 // }
+```
 
+## General Tips for Integration
 
-General Tips for Integration
-Start Simple: Begin with public channels to ensure basic connectivity and event flow are working before moving to private/presence channels that require authentication.
-Check Sockudo Logs: Sockudo's logs (especially in debug mode) can provide valuable information if connections or event publishing fail.
-Network Configuration: Ensure firewalls or network policies allow communication between your application server/clients and the Sockudo server on the configured port.
-SSL/TLS: If using https for Sockudo (either directly or via a reverse proxy), ensure your client libraries are configured to use secure WebSocket connections (wss://) and trust the certificate if it's self-signed (though using a valid CA-signed certificate is recommended for production).
+* **Start Simple**: Begin with public channels to ensure basic connectivity and event flow are working before moving to private/presence channels that require authentication.
+* **Check Sockudo Logs**: Sockudo's logs (especially in debug mode) can provide valuable information if connections or event publishing fail.
+* **Network Configuration**: Ensure firewalls or network policies allow communication between your application server/clients and the Sockudo server on the configured port.
+* **SSL/TLS**: If using https for Sockudo (either directly or via a reverse proxy), ensure your client libraries are configured to use secure WebSocket connections (wss://) and trust the certificate if it's self-signed (though using a valid CA-signed certificate is recommended for production).
