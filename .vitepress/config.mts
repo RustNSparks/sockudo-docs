@@ -7,13 +7,13 @@ export default defineConfig({
     "A high-performance, Pusher-compatible WebSockets server written in Rust.",
   base: "/", // Adjust if you're deploying to a subdirectory like username.github.io/sockudo-docs/
   head: [
-    ["link", { rel: "icon", href: "/images/favicon.ico" }], // Adjust path if base is different
+    ["link", { rel: "icon", href: "/favicon.ico" }], // Adjust path if base is different
     // You can add other meta tags here
   ],
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "/images/logo.svg", // Path relative to the 'public' directory in `docs`
+    logo: "/logo.svg", // Path relative to the 'public' directory in `docs`
 
     nav: [
       { text: "Home", link: "/" },
