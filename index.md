@@ -7,7 +7,7 @@ hero:
   text: "High-Performance Pusher-Compatible WebSockets"
   tagline: Built with Rust for speed, reliability, and seamless integration with your existing applications.
   image:
-    src: /images/logo.svg # Make sure this path is correct relative to your `public` directory
+    src: /logo.svg # Make sure this path is correct relative to your `public` directory
     alt: Sockudo Logo
   actions:
     - theme: brand
