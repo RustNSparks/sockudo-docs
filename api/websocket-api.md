@@ -28,7 +28,7 @@ It is **highly recommended** to use official Pusher client libraries (like Pushe
 * Authentication flow for private and presence channels.
 * Binding to events.
 
-Refer to the [Integrations section](../integrations/) for examples using specific client libraries.
+Refer to the [Integrations section](../integrations/laravel-echo.md) for examples using specific client libraries.
 
 ## Core Protocol Messages
 

@@ -33,15 +33,14 @@ This means an environment variable will always take precedence over a value set 
 
 The configuration is broken down into several key areas, each handling a specific aspect of the server:
 
-* **[Server Options](./server-options.md)**: General server settings like host, port, debug mode, and SSL.
-* **[Adapter](./adapter.md)**: Configures how Sockudo communicates and scales across multiple instances (e.g., Local, Redis, NATS).
-* **[App Manager](./app-manager.md)**: Manages your applications (credentials, settings) using backends like Memory, MySQL, or DynamoDB.
-* **[Cache](./cache.md)**: Settings for caching mechanisms (e.g., Memory, Redis) to improve performance.
-* **[Queue](./queue.md)**: Configuration for background job processing and message queuing (e.g., Memory, Redis, SQS), often used by webhooks.
-* **[Metrics](./metrics.md)**: Enables and configures performance metrics exposure (e.g., Prometheus).
-* **[Rate Limiter](./rate-limiter.md)**: Protects your server from abuse by limiting request rates.
-* **[Cluster](./cluster.md)**: Settings for Sockudo's internal clustering capabilities (if applicable and distinct from adapter-based scaling).
-* **[Webhooks](./webhooks.md)**: Configuration for sending event notifications to your application.
-* **[Other Options](./other-options.md)**: Includes settings for CORS, channel limits, event limits, HTTP API behavior, and more.
+* **[Server Options](./configuration/server-options.md)**: General server settings like host, port, debug mode, and SSL.
+* **[Adapter](./configuration/adapter.md)**: Configures how Sockudo communicates and scales across multiple instances (e.g., Local, Redis, NATS).
+* **[App Manager](./configuration/app-manager.md)**: Manages your applications (credentials, settings) using backends like Memory, MySQL, or DynamoDB.
+* **[Cache](./configuration/cache.md)**: Settings for caching mechanisms (e.g., Memory, Redis) to improve performance.
+* **[Queue](./configuration/queue.md)**: Configuration for background job processing and message queuing (e.g., Memory, Redis, SQS), often used by webhooks.
+* **[Metrics](./configuration/metrics.md)**: Enables and configures performance metrics exposure (e.g., Prometheus).
+* **[Rate Limiter](./configuration/rate-limiter.md)**: Protects your server from abuse by limiting request rates.
+* **[Webhooks](./configuration/webhooks.md)**: Configuration for sending event notifications to your application.
+* **[Other Options](./configuration/other-options.md)**: Includes settings for CORS, channel limits, event limits, HTTP API behavior, and more.
 
 Navigate to the respective sections to learn about the specific options available for each component. Always refer to the `src/options.rs` file for the most up-to-date and complete list of structures and default values.
