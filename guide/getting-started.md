@@ -39,6 +39,7 @@ Follow these steps to download and build Sockudo:
     ```
     This command will compile Sockudo and place the executable in the `target/release/` directory. If you omit `--release`, a debug build will be created in `target/debug/`.
 
+Prebuilt binaries are also available for download on the [Releases page](
 ## Running Sockudo
 
 Once the build is complete, you can start the Sockudo server.
@@ -97,7 +98,7 @@ Sockudo can be configured in two primary ways:
 For a minimal setup, the default configuration is often sufficient for initial testing.
 
 **Example `config.json` (Minimal):**
-If you want to quickly define an application, create a `src/config.json` (as per default path in `main.rs` [cite: uploaded:rustnsparks/sockudo/sockudo-a47486991577778dec2033c359ae40ff1cbee148/src/main.rs]) or specify with `./target/release/sockudo --config=./myconfig.json`:
+If you want to quickly define an application, create a `src/config.json` (as per default path in `main.rs`) or specify with `./target/release/sockudo --config=./myconfig.json`:
 ```json
 {
   "app_manager": {
@@ -119,4 +120,5 @@ If you want to quickly define an application, create a `src/config.json` (as per
   "port": 6001,
   "debug": true
 }
+```
 For detailed information on all configuration options and how to use environment variables, please refer to the Configuration Guide.Next StepsCongratulations! You've successfully installed and run Sockudo. Here's what you might want to do next:Configure Sockudo: Dive deep into all the available configuration options to tailor Sockudo to your needs.Integrate with Laravel Echo: Learn how to connect your Laravel application to Sockudo.Use with Pusher JS: See examples of how to use the standard Pusher JavaScript client.Explore API Endpoints: Understand the HTTP and WebSocket APIs Sockudo provides.
