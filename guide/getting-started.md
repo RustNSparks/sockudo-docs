@@ -39,7 +39,7 @@ Follow these steps to download and build Sockudo:
     ```
     This command will compile Sockudo and place the executable in the `target/release/` directory. If you omit `--release`, a debug build will be created in `target/debug/`.
 
-Prebuilt binaries are also available for download on the [Releases page](
+Prebuilt binaries are also available for download on the [Releases page](https://github.com/RustNSparks/sockudo/releases)
 ## Running Sockudo
 
 Once the build is complete, you can start the Sockudo server.
