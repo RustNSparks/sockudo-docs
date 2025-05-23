@@ -1,95 +1,181 @@
-# Cluster Configuration
+# Webhooks Configuration
 
-Sockudo includes settings for an internal clustering mechanism, defined by the `ClusterConfig` structure in `src/options.rs`. This configuration appears to facilitate node discovery and coordination among Sockudo instances, potentially for features like master election or maintaining a consistent view of the cluster state.
+Sockudo can send webhooks to your application to notify it of various events occurring on the WebSocket server, such as when channels become occupied or vacated, or when members join or leave presence channels.
 
-This internal clustering is distinct from the horizontal scaling provided by **Adapters** (like Redis or NATS), although they might complement each other. The adapter handles message broadcasting for WebSockets, while this cluster configuration might be for inter-node operational communication.
+Global webhook settings, particularly for batching, are configured under the `webhooks` object in your `config.json`. Specific webhook endpoints and event types are typically defined per application within the App Manager configuration.
 
-Cluster settings are configured under the `cluster` object in your `config.json`.
+## Global Webhook Settings (`webhooks`)
 
-## Cluster Settings (`cluster`)
+These settings apply to the overall webhook sending mechanism.
 
-* **JSON Key (Parent)**: `cluster`
+**JSON Key (Parent):** `webhooks`
 
-### `cluster.hostname`
-* **JSON Key**: `hostname`
-* **Environment Variable**: `CLUSTER_HOSTNAME` (Verify specific ENV var)
-* **Type**: `string`
-* **Description**: The hostname or IP address that this node should advertise to other nodes in the cluster.
-* **Default Value**: `"localhost"`
+### Batching Configuration (`webhooks.batching`)
 
-### `cluster.hello_interval`
-* **JSON Key**: `hello_interval`
-* **Type**: `integer` (u64, milliseconds)
-* **Description**: Interval at which this node sends "hello" or heartbeat messages to discover or maintain connections with other cluster nodes.
-* **Default Value**: `5000` (5 seconds)
+Sockudo can batch multiple webhook events together before sending them to your application. This can reduce the number of HTTP requests to your webhook endpoint.
 
-### `cluster.check_interval`
-* **JSON Key**: `check_interval`
-* **Type**: `integer` (u64, milliseconds)
-* **Description**: Interval at which this node checks the status of other known nodes in the cluster.
-* **Default Value**: `10000` (10 seconds)
+**JSON Key (Parent Object):** `webhooks.batching`
 
-### `cluster.node_timeout`
-* **JSON Key**: `node_timeout`
-* **Type**: `integer` (u64, milliseconds)
-* **Description**: Duration after which a node is considered timed out or unreachable if no communication is received from it.
-* **Default Value**: `30000` (30 seconds)
+#### `webhooks.batching.enabled`
 
-### `cluster.master_timeout`
-* **JSON Key**: `master_timeout`
-* **Type**: `integer` (u64, milliseconds)
-* **Description**: Timeout related to master node election or a master node's validity, if a master/slave architecture is used within the cluster.
-* **Default Value**: `60000` (60 seconds)
+- **JSON Key:** `enabled`
+- **Type:** boolean
+- **Description:** Enables or disables webhook batching.
+- **Default Value:** `true`
 
-### `cluster.port`
-* **JSON Key**: `port`
-* **Environment Variable**: `CLUSTER_PORT` (Verify specific ENV var)
-* **Type**: `integer` (u16)
-* **Description**: The port number this Sockudo node will use for its internal cluster communication. This should be different from the main application port and metrics port.
-* **Default Value**: `6002`
+#### `webhooks.batching.duration`
 
-### `cluster.prefix`
-* **JSON Key**: `prefix`
-* **Type**: `string`
-* **Description**: A prefix used for any communication channels or keys related to this internal clustering mechanism (e.g., if it uses a shared backend like Redis for discovery).
-* **Default Value**: `"sockudo_cluster:"`
+- **JSON Key:** `duration`
+- **Type:** integer (u64, milliseconds)
+- **Description:** The maximum duration (in milliseconds) to buffer webhook events before sending a batch, if batching is enabled. Even if the batch isn't full, it will be sent after this duration.
+- **Default Value:** `50` (milliseconds)
 
-### `cluster.ignore_process`
-* **JSON Key**: `ignore_process`
-* **Type**: `boolean`
-* **Description**: If `true`, this node might ignore its own process in cluster operations or discovery, potentially to avoid self-connection or self-election in certain scenarios.
-* **Default Value**: `false`
+### Example (`config.json` for global batching)
 
-### `cluster.broadcast`
-* **JSON Key**: `broadcast`
-* **Type**: `string`
-* **Description**: An identifier (e.g., a topic or channel name) used for broadcasting messages to all nodes in the cluster.
-* **Default Value**: `"cluster:broadcast"`
-
-### `cluster.unicast`
-* **JSON Key**: `unicast`
-* **Type**: `string` (optional)
-* **Description**: An identifier or pattern for sending messages to a specific, single node in the cluster.
-* **Default Value**: `"cluster:unicast"`
-
-### `cluster.multicast`
-* **JSON Key**: `multicast`
-* **Type**: `string` (optional)
-* **Description**: An identifier or pattern for sending messages to a group of nodes (a subset of the cluster).
-* **Default Value**: `"cluster:multicast"`
-
-* **Example (`config.json`)**:
-    ```json
-    {
-      "cluster": {
-        "hostname": "node1.internal.example.com",
-        "port": 7001,
-        "hello_interval": 3000,
-        "prefix": "my_app_cluster:",
-        "broadcast": "myapp_cluster_bcast"
-      }
+```json
+{
+  "webhooks": {
+    "batching": {
+      "enabled": true,
+      "duration": 100
     }
-    ```
+  }
+  // ... other configurations
+}
+```
 
-**Note on Usage:**
-The exact behavior and necessity of these cluster settings depend on Sockudo's internal implementation. If you are running a single Sockudo instance, these settings might not have a significant impact. For multi-node deployments, understanding how this internal clustering interacts with your chosen **Adapter** (e.g., Redis, NATS) is important. The adapter typically handles the primary task of message relay for WebSockets across instances. This cluster configuration might be for auxiliary coordination. Consult further project documentation or source code if advanced cluster tuning is required.
+## Per-Application Webhook Configuration
+
+Individual webhook endpoints, the events they subscribe to, and other details are configured within each application's definition. This is typically done in the `apps` array under `app_manager.array` if using the memory app manager, or in the corresponding database record if using a database-backed app manager.
+
+Refer to the App object structure within the App Manager Configuration for how to define the `webhooks` array for an app.
+
+### Webhook Object Structure (within an App's `webhooks` array)
+
+This structure is based on `src/webhook/types.rs`.
+
+#### Properties
+
+- **`url`** (string, optional): The HTTP(S) URL of your application's endpoint that will receive the webhook POST requests.
+
+- **`lambda_function`** (string, optional): The name of an AWS Lambda function to invoke for the webhook.
+
+- **`lambda`** (object, optional, structure based on `LambdaWebhookConfig`):
+  - **`function_name`** (string): Name of the Lambda function.
+  - **`invocation_type`** (string, optional): Lambda invocation type (e.g., "RequestResponse", "Event"). Default: "Event".
+  - **`qualifier`** (string, optional): Lambda function version or alias.
+  - **`region`** (string, optional): AWS region for the Lambda function. If not set, might use default from SDK.
+  - **`endpoint_url`** (string, optional): Custom AWS Lambda endpoint URL (for testing with LocalStack, etc.).
+
+- **`event_types`** (array of strings, required): A list of event types that should trigger this webhook. Common Pusher event types include:
+  - `channel_occupied`: Sent when a channel first becomes active (first subscriber).
+  - `channel_vacated`: Sent when a channel becomes empty (last subscriber leaves).
+  - `member_added`: Sent when a user joins a presence channel.
+  - `member_removed`: Sent when a user leaves a presence channel.
+  - `client_event`: Sent when a client sends an event on a channel (if enabled and configured).
+
+- **`filter`** (object, optional, structure based on `WebhookFilter`): Defines filters for when to send webhooks.
+  - **`channel_type`** (string, optional): Filter by channel type (e.g., "public", "private", "presence").
+  - **`channel_prefix`** (string, optional): Filter by channel name prefix (e.g., "private-").
+
+- **`headers`** (object, map of string to string, optional): Custom HTTP headers to include in the webhook request sent to a `url`.
+
+### Example (App definition with webhooks in `config.json`)
+
+```json
+{
+  "app_manager": {
+    "driver": "memory",
+    "array": {
+      "apps": [
+        {
+          "id": "my-app-with-webhooks",
+          "key": "app-key-wh",
+          "secret": "app-secret-wh",
+          "webhooks": [
+            {
+              "url": "https://api.example.com/sockudo/events",
+              "event_types": ["channel_occupied", "channel_vacated"],
+              "headers": {
+                "X-Custom-Auth": "mysecrettoken"
+              }
+            },
+            {
+              "lambda": {
+                "function_name": "sockudoPresenceHandler",
+                "region": "us-east-1"
+              },
+              "event_types": ["member_added", "member_removed"],
+              "filter": {
+                "channel_prefix": "presence-"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "webhooks": {
+    "batching": {
+      "enabled": true,
+      "duration": 75
+    }
+  }
+}
+```
+
+## Webhook Payload
+
+The payload sent to your webhook endpoint will typically be a JSON object (or an array of objects if batched) containing information about the event(s). The structure is compatible with Pusher webhook payloads.
+
+### Example single event payload for `member_added`
+
+```json
+{
+  "name": "member_added",
+  "channel": "presence-globalchat",
+  "event": "pusher_internal:member_added",
+  "data": "{\"user_id\":\"user-123\",\"user_info\":{\"name\":\"Alice\"}}",
+  "socket_id": "some-socket-id",
+  "user_id": "user-123",
+  "time_ms": 1678886400000
+}
+```
+
+### Batched payload example
+
+If batching is enabled, your endpoint might receive an array:
+
+```json
+{
+  "time_ms": 1678886400500,
+  "events": [
+    {
+      "name": "member_added",
+      "channel": "presence-chat",
+      "user_id": "u1",
+      "...": "..."
+    },
+    {
+      "name": "channel_vacated",
+      "channel": "private-room-1",
+      "...": "..."
+    }
+  ]
+}
+```
+
+### Best Practices
+
+Your application should be prepared to:
+
+- Parse this JSON and handle the events accordingly
+- Handle retries (if Sockudo implements them)
+- Respond quickly with a 2xx status code to acknowledge receipt
+- Be robust in handling webhook failures
+
+Non-2xx responses may be considered failures by Sockudo.
+
+## Queue for Webhooks
+
+Webhook processing often utilizes the Queue System. If a queue driver (like Redis or SQS) is configured, webhook events are typically pushed onto the queue and processed by background workers.
