@@ -17,22 +17,23 @@ Queue configuration is managed under the `queue` object in your `config.json`.
 * **Possible Values**:
     * `"memory"`: In-memory queue. Simple for development but not persistent or shared across instances.
     * `"redis"`: Uses a Redis server as a message queue.
+    * `"redis-cluster"`: Uses a Redis Cluster as a message queue for high availability and scalability.
     * `"sqs"`: Uses Amazon Simple Queue Service (SQS).
     * `"none"`: Disables the queueing system. Webhooks might be sent synchronously or not at all if the queue is required.
 * **Example (`config.json`)**:
     ```json
     {
       "queue": {
-        "driver": "sqs",
-        "sqs": {
-          // SQS specific config here
+        "driver": "redis-cluster",
+        "redis_cluster": {
+          // Redis Cluster specific config here
         }
       }
     }
     ```
 * **Example (Environment Variable)**:
     ```bash
-    export QUEUE_DRIVER=sqs
+    export QUEUE_DRIVER=redis-cluster
     ```
 
 ## Redis Queue Options (`queue.redis`)
@@ -84,6 +85,74 @@ These settings are applicable if `queue.driver` is set to `"redis"`.
 **Note on Redis Connections for Queue:**
 If `queue.redis.url_override` is not specified, the queue manager will typically fall back to using the global Redis connection settings defined under `database.redis`. Ensure these are correctly configured if you intend to use Redis for queuing without an override URL.
 See [Database Configuration (Other Options)](./other-options.md#database-configuration-database) for `database.redis` details.
+
+## Redis Cluster Queue Options (`queue.redis_cluster`)
+
+These settings are applicable if `queue.driver` is set to `"redis-cluster"`.
+
+* **JSON Key (Parent Object)**: `queue.redis_cluster`
+
+### `queue.redis_cluster.concurrency`
+* **JSON Key**: `concurrency`
+* **Environment Variable**: `REDIS_CLUSTER_QUEUE_CONCURRENCY`
+* **Type**: `integer` (u32)
+* **Description**: The number of concurrent workers processing jobs from this Redis Cluster queue.
+* **Default Value**: `5`
+
+### `queue.redis_cluster.prefix`
+* **JSON Key**: `prefix`
+* **Environment Variable**: `REDIS_CLUSTER_QUEUE_PREFIX`
+* **Type**: `string` (optional)
+* **Description**: A prefix for Redis keys used by the queue (e.g., list names) in the cluster.
+* **Default Value**: `"sockudo_queue:"`
+
+### `queue.redis_cluster.nodes`
+* **JSON Key**: `nodes`
+* **Environment Variable**: `REDIS_CLUSTER_NODES` (comma-separated list)
+* **Type**: `array` of `string`
+* **Description**: List of Redis cluster node URLs to connect to. The client will discover other nodes in the cluster automatically.
+    Format: `["redis://host1:port1", "redis://host2:port2", ...]`
+* **Default Value**: `["redis://127.0.0.1:7000", "redis://127.0.0.1:7001", "redis://127.0.0.1:7002"]`
+
+### `queue.redis_cluster.request_timeout_ms`
+* **JSON Key**: `request_timeout_ms`
+* **Type**: `integer` (u64, milliseconds)
+* **Description**: Request timeout for Redis cluster operations in milliseconds.
+* **Default Value**: `5000`
+
+* **Example (`config.json` for Redis Cluster)**:
+    ```json
+    {
+      "queue": {
+        "driver": "redis-cluster",
+        "redis_cluster": {
+          "nodes": [
+            "redis://redis-cluster-node-1:7000",
+            "redis://redis-cluster-node-2:7000",
+            "redis://redis-cluster-node-3:7000"
+          ],
+          "concurrency": 8,
+          "prefix": "production_queue:",
+          "request_timeout_ms": 10000
+        }
+      }
+    }
+    ```
+
+* **Example (Environment Variables for Redis Cluster)**:
+    ```bash
+    export QUEUE_DRIVER=redis-cluster
+    export REDIS_CLUSTER_NODES="redis://node1:7000,redis://node2:7000,redis://node3:7000"
+    export REDIS_CLUSTER_QUEUE_CONCURRENCY=8
+    export REDIS_CLUSTER_QUEUE_PREFIX="production_queue:"
+    ```
+
+**Note on Redis Cluster:**
+When using Redis Cluster, ensure that:
+1. Your Redis Cluster is properly configured and all nodes are accessible from your Sockudo instance.
+2. The cluster has sufficient master nodes to handle the expected load.
+3. Network connectivity between Sockudo and all cluster nodes is reliable.
+4. Consider using consistent node URLs (avoid mixing IP addresses and hostnames) for better reliability.
 
 ## SQS Queue Options (`queue.sqs`)
 
@@ -172,3 +241,17 @@ When using the SQS driver, Sockudo's AWS SDK will need credentials. These are ty
 3.  IAM roles for EC2 instances or ECS tasks.
 
 Refer to the [AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-rust/latest/dg/credentials.html) for more details on credential providers.
+
+## Queue Driver Comparison
+
+| Feature | Memory | Redis | Redis Cluster | SQS |
+|---------|--------|-------|---------------|-----|
+| **Persistence** | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Multi-instance** | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes |
+| **High Availability** | ❌ No | ⚠️ Limited | ✅ Yes | ✅ Yes |
+| **Scalability** | ❌ Limited | ⚠️ Vertical | ✅ Horizontal | ✅ Managed |
+| **Cost** | ✅ Free | 💰 Hosting costs | 💰 Hosting costs | 💰 Per message |
+| **Setup Complexity** | ✅ Simple | ⚠️ Moderate | ❌ Complex | ✅ Managed |
+| **Best For** | Development | Single Redis instance | High availability | AWS-native apps |
+
+Choose the queue driver that best fits your deployment requirements and infrastructure constraints.
