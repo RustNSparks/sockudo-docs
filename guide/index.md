@@ -238,18 +238,17 @@ $pusher = new Pusher(
 
 ### Documentation
 - **[Complete Configuration Reference](./configuration.md)**: Detailed configuration options
-- **[API Reference](../api/README.md)**: HTTP API documentation
-- **[Examples](../examples/README.md)**: Sample implementations and use cases
+- **[Troubleshooting Guide](./troubleshooting.md)**: Solutions for common issues
+- **[Deployment Guide](./deployment.md)**: Production deployment strategies
 
 ### Getting Help
-- **[Troubleshooting Guide](./troubleshooting.md)**: Solutions for common issues
 - **[GitHub Issues](https://github.com/RustNSparks/sockudo/issues)**: Report bugs or request features
-- **[Discussions](https://github.com/RustNSparks/sockudo/discussions)**: Community support and questions
+- **[GitHub Repository](https://github.com/RustNSparks/sockudo)**: Source code and documentation
 
-### Contributing
-- **[Contributing Guide](../CONTRIBUTING.md)**: How to contribute to Sockudo
-- **[Development Setup](../README.md#development)**: Set up a development environment
-- **[Code of Conduct](../CODE_OF_CONDUCT.md)**: Community guidelines
+### Community
+- Check the project's GitHub repository for the latest updates and community discussions
+- Review the main README.md file in the repository root for additional information
+- Look for examples and sample configurations in the project repository
 
 ## What's Next?
 
