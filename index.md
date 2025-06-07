@@ -18,22 +18,22 @@ hero:
       link: https://github.com/RustNSparks/sockudo
 
 features:
-  - title: 🚀 Blazing Fast & Efficient
+  - title: Blazing Fast & Efficient
     details: Leveraging Rust's performance and memory safety, Sockudo is designed for high-throughput and low-latency real-time communication.
     icon: 🚀
-  - title: 🔌 Pusher Protocol Compatible
+  - title: Pusher Protocol Compatible
     details: Seamlessly integrate with Laravel Echo and other Pusher client libraries. Drop-in replacement for existing Pusher setups.
     icon: 🔌
-  - title: 🧱 Modular & Extensible
+  - title: Modular & Extensible
     details: Flexible architecture with swappable components for adapters (Redis, NATS, Local), app management (Memory, MySQL, DynamoDB), and caching.
     icon: 🧱
-  - title: ⚖️ Scalable Architecture
+  - title: Scalable Architecture
     details: Built-in support for horizontal scaling using Redis, Redis Cluster, or NATS adapters to handle growing user loads.
     icon: ⚖️
-  - title: 🛡️ Robust & Secure
+  - title: Robust & Secure
     details: Features like channel authentication, rate limiting, and webhook integrations to build secure and reliable real-time applications.
     icon: 🛡️
-  - title: 📊 Monitoring & Metrics
+  - title: Monitoring & Metrics
     details: Integrated Prometheus metrics endpoint for comprehensive performance monitoring and operational insights.
     icon: 📊
 ---

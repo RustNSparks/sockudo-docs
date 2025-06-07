@@ -34,6 +34,7 @@ export default defineConfig({
       "/guide/": [
         {
           text: "Introduction",
+          link: "/guide/",
           collapsed: false,
           items: [{ text: "Getting Started", link: "/guide/getting-started" }],
         },

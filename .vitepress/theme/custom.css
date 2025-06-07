@@ -1,0 +1,19 @@
+:root {
+  --logo-glow-primary: rgba(251, 146, 60, 0.6);
+  --logo-glow-secondary: rgba(251, 146, 60, 0.4);
+  --logo-glow-tertiary: rgba(251, 146, 60, 0.2);
+}
+
+.dark {
+  --logo-glow-primary: rgba(255, 154, 0, 0.7);
+  --logo-glow-secondary: rgba(255, 154, 0, 0.5);
+  --logo-glow-tertiary: rgba(255, 154, 0, 0.3);
+}
+
+.VPNavBarTitle .VPImage,
+.VPHero .VPImage {
+  filter: drop-shadow(0 0 15px var(--logo-glow-primary))
+          drop-shadow(0 0 25px var(--logo-glow-secondary))
+          drop-shadow(0 0 35px var(--logo-glow-tertiary));
+  transition: filter 0.3s ease;
+}
