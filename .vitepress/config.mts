@@ -17,7 +17,7 @@ export default defineConfig({
 
     nav: [
       { text: "Home", link: "/" },
-      { text: "Guide", link: "/guide/getting-started" },
+      { text: "Guide", link: "/guide" },
       { text: "API Reference", link: "/api/" },
       { text: "Concepts", link: "/concepts/architecture" },
       { text: "Integrations", link: "/integrations/index" },

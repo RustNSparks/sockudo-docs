@@ -1,5 +1,3 @@
-# guide/index.md
-
 # Sockudo Guide
 
 Welcome to the Sockudo guide! This comprehensive documentation will walk you through everything you need to know to get Sockudo up and running, configure it for your needs, and understand its core features.
