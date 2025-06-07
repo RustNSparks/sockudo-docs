@@ -147,6 +147,7 @@ export default defineConfig({
 
     socialLinks: [
       { icon: "github", link: "https://github.com/RustNSparks/sockudo" },
+      { icon: "discord", link: "https://discord.gg/MRhmYg68RY" },
     ],
 
     editLink: {
@@ -156,7 +157,7 @@ export default defineConfig({
 
     footer: {
       message: "Released under the AGPL-3.0 License.",
-      copyright: `Copyright © 2023-${new Date().getFullYear()} RustNSparks & Contributors`,
+      copyright: `Copyright © 2025-${new Date().getFullYear()} RustNSparks & Contributors`,
     },
 
     // Search Configuration (VitePress Default Algolia or Local Search)

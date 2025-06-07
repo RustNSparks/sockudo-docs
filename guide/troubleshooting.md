@@ -1,3 +1,5 @@
+# guide/troubleshooting.md
+
 # Troubleshooting Guide
 
 This guide provides solutions and diagnostic steps for common issues you might encounter while setting up or running Sockudo.
@@ -6,40 +8,53 @@ This guide provides solutions and diagnostic steps for common issues you might e
 
 The first step in troubleshooting is often to get more detailed logs from Sockudo. You can enable debug mode in two ways:
 
-1.  **Via `config.json`**:
-    Set the `debug` option to `true`:
-    ```json
-    {
-      "debug": true
-      // ... other configurations
-    }
-    ```
+### Via `config.json`
+Set the `debug` option to `true`:
+```json
+{
+  "debug": true
+}
+```
 
-2.  **Via Environment Variable**:
-    Set the `DEBUG` environment variable:
-    ```bash
-    export DEBUG=true
-    ./target/release/sockudo # Or however you run Sockudo
-    ```
-    When debug mode is enabled, Sockudo will output more verbose logs, which can provide valuable clues about the problem.
+### Via Environment Variable
+Set the `DEBUG` environment variable:
+```bash
+export DEBUG=true
+./target/release/sockudo
+```
+
+When debug mode is enabled, Sockudo will output more verbose logs, which can provide valuable clues about the problem.
 
 ## Viewing Logs
 
 How you view logs depends on how you're running Sockudo:
 
-* **Directly in Terminal**: Logs will be printed to `stdout` and `stderr`.
-* **`systemd` Service**: If running as a `systemd` service (as recommended for production), use `journalctl`:
-    ```bash
-    sudo journalctl -u sockudo.service          # View all logs for the service
-    sudo journalctl -u sockudo.service -f       # Follow new logs in real-time
-    sudo journalctl -u sockudo.service -n 100   # View the last 100 log lines
-    sudo journalctl -u sockudo.service --since "1 hour ago" # Logs from the last hour
-    ```
-* **Docker**: If running in Docker:
-    ```bash
-    docker logs <container_name_or_id>
-    docker logs -f <container_name_or_id> # Follow logs
-    ```
+### Direct Execution
+Logs will be printed to `stdout` and `stderr` in your terminal.
+
+### systemd Service
+If running as a `systemd` service (recommended for production):
+```bash
+sudo journalctl -u sockudo.service          # View all logs for the service
+sudo journalctl -u sockudo.service -f       # Follow new logs in real-time
+sudo journalctl -u sockudo.service -n 100   # View the last 100 log lines
+sudo journalctl -u sockudo.service --since "1 hour ago" # Logs from the last hour
+```
+
+### Docker
+If running in Docker:
+```bash
+docker logs <container_name_or_id>
+docker logs -f <container_name_or_id>  # Follow logs
+docker-compose logs sockudo
+docker-compose logs -f sockudo         # Follow logs
+```
+
+### Docker Compose
+```bash
+docker-compose logs sockudo
+docker-compose logs -f sockudo --tail=100
+```
 
 Look for error messages (often prefixed with `ERROR` or `WARN`), stack traces, or any unusual activity.
 
@@ -47,99 +62,729 @@ Look for error messages (often prefixed with `ERROR` or `WARN`), stack traces, o
 
 ### 1. Connection Refused / Server Not Reachable
 
-* **Symptom**: Clients (Laravel Echo, Pusher JS) cannot connect to Sockudo. Browsers show "connection refused" or timeout errors.
-* **Possible Causes & Solutions**:
-    * **Sockudo Not Running**: Ensure the Sockudo process is actually running. Check with `ps aux | grep sockudo` or `systemctl status sockudo.service`.
-    * **Incorrect Host/Port**:
-        * Verify Sockudo's configured `host` and `port` in `config.json` or environment variables.
-        * Ensure your client configuration (e.g., Laravel Echo's `wsHost`, `wsPort`) matches exactly.
-    * **Firewall**: A firewall on the server (e.g., `ufw`, `firewalld`) or a cloud provider security group might be blocking incoming connections to Sockudo's port.
-    * **Reverse Proxy Issues**: If using Nginx, Apache, Caddy, or another reverse proxy:
-        * Ensure the proxy is correctly configured to forward WebSocket connections (headers like `Upgrade` and `Connection`).
-        * Verify the proxy is passing requests to the correct internal Sockudo host and port.
-        * Check the reverse proxy's logs for errors.
-    * **SSL/TLS Mismatch**:
-        * If Sockudo is configured for SSL (`ssl.enabled: true`), clients must connect using `wss://` (and `forceTLS: true` or equivalent in client config).
-        * If SSL is not enabled in Sockudo (or SSL is terminated at the proxy), clients must use `ws://` to connect to the proxy (which then might connect to Sockudo via HTTP).
-    * **Listening on Wrong Interface**: If `host` is set to `127.0.0.1` (localhost), Sockudo will only accept connections from the server itself. For external access, use `0.0.0.0` or the server's specific public/private IP address that clients can reach.
+**Symptom**: Clients (Laravel Echo, Pusher JS) cannot connect to Sockudo. Browsers show "connection refused" or timeout errors.
 
-### 2. Authentication Failures (4xx Errors for Private/Presence Channels)
+**Possible Causes & Solutions**:
 
-* **Symptom**: Clients fail to subscribe to private or presence channels. The browser console might show 401, 403, or other 4xx errors during the authentication request to your application's auth endpoint. Sockudo logs might show authentication errors related to channel authorization.
-* **Possible Causes & Solutions**:
-    * **Incorrect App Key/Secret**:
-        * Verify that the `app_id`, `key`, and `secret` in your client-side application (e.g., Laravel `.env` file for `VITE_PUSHER_APP_KEY`, `VITE_PUSHER_APP_SECRET`) exactly match an application configured in Sockudo (either in `app_manager.array.apps` or your app manager's database).
-        * Secrets are case-sensitive.
-    * **Auth Endpoint Issues (for private/presence channels)**:
-        * Ensure your application's authentication endpoint (e.g., `/broadcasting/auth` in Laravel) is correctly implemented and accessible.
-        * This endpoint must validate the user and return a valid JSON response with the signed channel data, as per Pusher's protocol.
-        * Check logs of your auth endpoint application (e.g., Laravel logs) for errors.
-    * **CORS Issues with Auth Endpoint**: If your auth endpoint is on a different domain/port than your main web application, ensure CORS is correctly configured on the auth endpoint server to allow requests from your web app's origin, including credentials.
-    * **Timestamp/Signature Mismatch**: Pusher protocol authentication is sensitive to timing and signature generation. Ensure your server-side auth logic (e.g., Laravel Broadcasting) is correctly signing the auth response using the correct app secret.
-    * **Sockudo User Authentication Timeout**: Check `user_authentication_timeout` in Sockudo's config. If your auth endpoint is slow, this might be too short.
+#### Sockudo Not Running
+```bash
+# Check if Sockudo process is running
+ps aux | grep sockudo
+systemctl status sockudo.service  # If using systemd
+docker ps | grep sockudo          # If using Docker
+```
 
-### 3. Redis Connection Issues
+#### Incorrect Host/Port Configuration
+```bash
+# Check current configuration
+curl http://localhost:6001/usage
 
-* **Symptom**: Sockudo fails to start or logs errors related to Redis if configured to use Redis for Adapter, Cache, Queue, or Rate Limiter.
-* **Possible Causes & Solutions**:
-    * **Redis Server Not Running/Reachable**:
-        * Ensure your Redis server is running: `redis-cli ping` (should return `PONG`).
-        * Verify the Redis host, port, password (if any), and database number in Sockudo's configuration (`database.redis`, or specific overrides like `adapter.redis.redis_pub_options.url`, `cache.redis.url_override`, etc.).
-        * Check network connectivity and firewalls between Sockudo and Redis server(s).
-    * **Incorrect Redis URL/Configuration**: Double-check connection strings and options. For Sentinel, ensure master name and sentinel nodes are correct. For Cluster, ensure all seed nodes are listed.
-    * **Authentication Failure**: If Redis requires a password, ensure it's correctly configured in Sockudo.
+# Verify configuration matches client settings
+# Client must use same host:port as configured in Sockudo
+```
 
-### 4. NATS Connection Issues
+**Common fixes**:
+- Ensure `host` is set to `"0.0.0.0"` for external access (not `"127.0.0.1"`)
+- Verify `port` matches what clients are trying to connect to
+- Check if port is already in use: `netstat -tuln | grep 6001`
 
-* **Symptom**: Sockudo fails to start or logs errors related to NATS if the NATS adapter is configured.
-* **Possible Causes & Solutions**:
-    * **NATS Server Not Running/Reachable**: Verify NATS server(s) are operational and accessible from where Sockudo is running.
-    * **Incorrect NATS URLs/Credentials**: Check `adapter.nats.servers`, `username`, `password`, `token` in Sockudo's config.
+#### Firewall Issues
+```bash
+# Check if firewall is blocking the port
+sudo ufw status                    # Ubuntu/Debian
+sudo firewall-cmd --list-all      # CentOS/RHEL
 
-### 5. SQS Queue Issues
+# Allow port through firewall
+sudo ufw allow 6001               # Ubuntu/Debian
+sudo firewall-cmd --add-port=6001/tcp --permanent  # CentOS/RHEL
+```
 
-* **Symptom**: Webhooks or other queued tasks are not being processed; errors related to SQS in logs.
-* **Possible Causes & Solutions**:
-    * **AWS Credentials**: Ensure Sockudo has valid AWS credentials with permissions to access the SQS queue. Check IAM roles, environment variables (`AWS_ACCESS_KEY_ID`, etc.), or shared credential files.
-    * **Incorrect SQS Configuration**: Verify `queue.sqs.region`, `queue_url_prefix` (or full queue URL if derived), FIFO settings, etc.
-    * **Network Connectivity**: Ensure Sockudo can reach the SQS endpoints. If using a VPC, check VPC endpoints, NAT gateways, and security groups.
+#### Docker Network Issues
+```bash
+# Check if container is properly exposing ports
+docker port <container_name>
 
-### 6. High Resource Usage (CPU/Memory)
+# Verify Docker network configuration
+docker network ls
+docker network inspect <network_name>
+```
 
-* **Symptom**: Sockudo process consumes excessive CPU or memory.
-* **Possible Causes & Solutions**:
-    * **High Connection/Message Volume**: If legitimate, you may need to scale vertically (more powerful server) or horizontally (more Sockudo instances with a suitable adapter).
-    * **Inefficient Client Behavior**: Clients sending too many messages or frequently connecting/disconnecting.
-    * **Memory Leaks (Rare)**: If memory usage continuously grows without stabilizing over a long period despite constant load, this could indicate a bug. Report this with detailed logs, metrics, and reproduction steps.
-    * **Debug Mode**: Running in debug mode (`"debug": true`) can increase resource usage. Disable it in production.
-    * **Adapter/Backend Issues**: Problems with connected services (Redis, NATS, databases) can sometimes cause Sockudo to work harder (e.g., retrying operations, holding resources).
-    * **Use Profiling Tools**: For deep dives, Rust profiling tools (like `perf`, `flamegraph`) can help identify performance bottlenecks in the code itself if you suspect an issue within Sockudo.
+### 2. SSL/TLS Issues
 
-### 7. Webhook Failures
+**Symptom**: Clients cannot connect when SSL is enabled, or certificate errors occur.
 
-* **Symptom**: Your application's webhook endpoint is not receiving events from Sockudo, or Sockudo logs errors related to webhooks.
-* **Possible Causes & Solutions**:
-    * **Incorrect Webhook URL/Lambda Config**: Verify the `url` or `lambda` configuration in the app's webhook settings.
-    * **Webhook Endpoint Issues**:
-        * Ensure your endpoint is publicly accessible (or accessible from Sockudo's network/VPC).
-        * Test your endpoint independently (e.g., with `curl` or Postman) to ensure it responds with a `2xx` status code quickly.
-        * Check logs on your webhook receiver application.
-    * **Queue System Issues**: If webhooks use a queue (Redis/SQS), check the queue system's health and Sockudo's queue configuration. Are workers processing the queue?
-    * **Batching Configuration**: If batching is enabled, events are sent periodically or when a batch is full. There might be a slight delay.
-    * **Event Type Mismatch**: Ensure the `event_types` in the webhook configuration match the events you expect.
-    * **Firewall/Network Issues**: Ensure Sockudo can make outbound requests to your webhook URL or AWS Lambda endpoints.
+#### Certificate File Issues
+```bash
+# Check if certificate files exist and are readable
+ls -la /etc/ssl/certs/sockudo.crt
+ls -la /etc/ssl/private/sockudo.key
+
+# Test certificate validity
+openssl x509 -in /etc/ssl/certs/sockudo.crt -text -noout
+
+# Verify private key
+openssl rsa -in /etc/ssl/private/sockudo.key -check
+
+# Check if certificate and key match
+openssl x509 -noout -modulus -in /etc/ssl/certs/sockudo.crt | md5sum
+openssl rsa -noout -modulus -in /etc/ssl/private/sockudo.key | md5sum
+# Should produce identical hashes
+```
+
+#### SSL Configuration Problems
+```bash
+# Test SSL connection
+openssl s_client -connect localhost:6001 -servername localhost
+
+# Test with curl
+curl -k https://localhost:6001/usage  # -k ignores certificate errors
+```
+
+**Common fixes**:
+- Ensure certificate files have correct permissions (644 for cert, 600 for key)
+- Verify certificate chain is complete
+- Check that SSL paths in config are correct
+- Ensure certificate is not expired
+
+### 3. Authentication Failures (4xx Errors for Private/Presence Channels)
+
+**Symptom**: Clients fail to subscribe to private or presence channels with 401, 403, or other 4xx errors.
+
+#### App Credentials Mismatch
+```bash
+# Check configured apps
+curl http://localhost:6001/usage  # Shows basic server info
+
+# Verify app configuration in config.json or database
+# Ensure client app_key matches server app configuration
+```
+
+#### Auth Endpoint Issues
+The authentication endpoint (typically `/pusher/auth` or `/broadcasting/auth`) must:
+- Be accessible from the client
+- Return proper JSON response with auth signature
+- Use the correct app secret for signing
+
+**Debug auth endpoint**:
+```bash
+# Test auth endpoint directly
+curl -X POST http://your-app.com/pusher/auth \
+  -d "socket_id=123.456&channel_name=private-test" \
+  -H "Cookie: your-session-cookie"
+```
+
+#### CORS Issues with Auth Endpoint
+```bash
+# Test CORS headers
+curl -H "Origin: https://your-frontend.com" \
+     -H "Access-Control-Request-Method: POST" \
+     -H "Access-Control-Request-Headers: Content-Type" \
+     -X OPTIONS http://your-app.com/pusher/auth
+```
+
+### 4. Redis Connection Issues
+
+**Symptom**: Sockudo fails to start or logs Redis connection errors when using Redis for adapter, cache, queue, or rate limiter.
+
+#### Redis Server Issues
+```bash
+# Check if Redis is running
+redis-cli ping  # Should return PONG
+
+# Check Redis logs
+tail -f /var/log/redis/redis-server.log
+
+# Test connectivity
+telnet redis-host 6379
+```
+
+#### Redis Configuration Problems
+```bash
+# Test Redis connection with auth (if password protected)
+redis-cli -h redis-host -p 6379 -a your-password ping
+
+# Check Redis configuration
+redis-cli CONFIG GET '*'
+
+# Monitor Redis operations
+redis-cli MONITOR
+```
+
+**Common fixes**:
+- Verify Redis URL format: `redis://[password@]host:port[/db]`
+- Check network connectivity between Sockudo and Redis
+- Ensure Redis password/auth is correctly configured
+- Verify Redis is accepting connections from Sockudo's IP
+
+### 5. High Resource Usage (CPU/Memory)
+
+**Symptom**: Sockudo process consumes excessive CPU or memory.
+
+#### Resource Monitoring
+```bash
+# Monitor resource usage
+top -p $(pgrep sockudo)
+htop  # Better interface
+
+# Memory usage details
+cat /proc/$(pgrep sockudo)/status | grep -i mem
+
+# File descriptor usage
+lsof -p $(pgrep sockudo) | wc -l
+```
+
+#### Common Causes
+- **High connection volume**: Too many concurrent connections
+- **Debug mode enabled**: Disable in production
+- **Memory leaks**: Check for gradual memory increase
+- **Inefficient client behavior**: Clients creating too many connections
+- **Large message payloads**: Monitor message sizes
+
+**Solutions**:
+```json
+{
+  "debug": false,  // Disable in production
+  "websocket_max_payload_kb": 32,  // Reduce if needed
+  "rate_limiter": {
+    "enabled": true,
+    "api_rate_limit": {
+      "max_requests": 50,  // Reduce if under attack
+      "window_seconds": 60
+    }
+  }
+}
+```
+
+### 6. Queue/Webhook Issues
+
+**Symptom**: Webhooks not being sent, or queue jobs not processing.
+
+#### Queue System Problems
+```bash
+# Check queue depth (Redis)
+redis-cli LLEN sockudo_queue:default
+
+# Monitor queue processing
+redis-cli MONITOR | grep sockudo_queue
+
+# SQS queue inspection (if using SQS)
+aws sqs get-queue-attributes --queue-url YOUR_QUEUE_URL --attribute-names All
+```
+
+#### Webhook Endpoint Issues
+```bash
+# Test webhook endpoint manually
+curl -X POST https://your-app.com/webhook/sockudo \
+  -H "Content-Type: application/json" \
+  -d '{"test": "data"}'
+
+# Check endpoint accessibility
+ping your-app.com
+curl -I https://your-app.com/webhook/sockudo
+```
+
+### 7. Database Connection Issues (App Manager)
+
+**Symptom**: Cannot load app configurations when using database-backed app manager.
+
+#### MySQL/PostgreSQL Issues
+```bash
+# Test database connection
+mysql -h mysql-host -u username -p database_name
+psql -h postgres-host -U username -d database_name
+
+# Check if table exists
+mysql -e "DESCRIBE applications;" database_name
+psql -c "\d applications" database_name
+```
+
+#### DynamoDB Issues
+```bash
+# Test AWS credentials and connectivity
+aws dynamodb list-tables --region us-east-1
+
+# Check specific table
+aws dynamodb describe-table --table-name sockudo-applications --region us-east-1
+
+# Test local DynamoDB (if using LocalStack)
+aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+```
+
+### 8. Adapter/Scaling Issues
+
+**Symptom**: Messages not being distributed across multiple Sockudo instances.
+
+#### Adapter Connectivity
+```bash
+# Redis adapter - check pub/sub
+redis-cli PSUBSCRIBE "sockudo_adapter:*"
+
+# NATS adapter - check connectivity
+nats pub test.subject "test message"
+nats sub test.subject
+```
+
+#### Instance Communication
+```bash
+# Check if instances can reach adapter
+# From each Sockudo instance:
+redis-cli -h adapter-host ping  # For Redis adapter
+nats-pub -s nats://nats-host:4222 test "message"  # For NATS adapter
+```
+
+## Debugging Tools and Commands
+
+### Health Checks
+```bash
+# Basic server health
+curl http://localhost:6001/usage
+
+# App-specific health
+curl http://localhost:6001/up/your-app-id
+
+# Metrics endpoint
+curl http://localhost:9601/metrics | head -20
+```
+
+### Network Diagnostics
+```bash
+# Check if port is listening
+netstat -tuln | grep 6001
+ss -tuln | grep 6001
+
+# Test WebSocket connection
+wscat -c ws://localhost:6001/app/your-app-key
+
+# Test with SSL
+wscat -c wss://localhost:6001/app/your-app-key
+```
+
+### Configuration Validation
+```bash
+# Validate JSON configuration
+jq . config/config.json
+
+# Check environment variables
+printenv | grep -E "(REDIS|SOCKUDO|DEBUG|SSL)"
+
+# Docker configuration check
+docker-compose config
+```
+
+### Log Analysis
+```bash
+# Search for errors in logs
+journalctl -u sockudo.service | grep -i error
+
+# Filter for specific patterns
+docker logs sockudo-container 2>&1 | grep "connection"
+
+# Count error types
+journalctl -u sockudo.service --since "1 hour ago" | grep ERROR | sort | uniq -c
+```
+
+## Performance Troubleshooting
+
+### Connection Issues
+```bash
+# Monitor connection patterns
+watch 'curl -s http://localhost:6001/usage'
+
+# Check for connection leaks
+netstat -an | grep :6001 | wc -l
+
+# Monitor file descriptor usage
+watch 'lsof -p $(pgrep sockudo) | wc -l'
+```
+
+### Message Flow Analysis
+```bash
+# Monitor metrics for message flow
+curl http://localhost:9601/metrics | grep -E "(messages_sent|messages_received)"
+
+# Check for message bottlenecks
+redis-cli MONITOR | grep sockudo  # If using Redis adapter
+```
+
+### Memory Analysis
+```bash
+# Check for memory leaks
+watch 'cat /proc/$(pgrep sockudo)/status | grep VmRSS'
+
+# Monitor memory growth over time
+while true; do
+  echo "$(date): $(cat /proc/$(pgrep sockudo)/status | grep VmRSS)"
+  sleep 60
+done
+```
 
 ## Getting Help
 
 If you're unable to resolve an issue:
 
-1.  **Check Sockudo's GitHub Issues**: See if someone else has reported a similar problem: [https://github.com/RustNSparks/sockudo/issues](https://github.com/RustNSparks/sockudo/issues)
-2.  **Open a New Issue**: If your problem is new, create a detailed issue on GitHub. Include:
-    * Sockudo version (e.g., commit hash if building from source).
-    * Relevant parts of your `config.json` (censor secrets).
-    * Detailed logs (especially with debug mode enabled).
-    * Steps to reproduce the issue.
-    * Your environment (OS, Rust version, how you're deploying - Docker, systemd, etc.).
-    * Client-side library and version (e.g., Laravel Echo, PusherJS).
+### Gather Information
+Before seeking help, collect:
+- Sockudo version or commit hash
+- Complete configuration (with secrets redacted)
+- Relevant log excerpts with debug mode enabled
+- Steps to reproduce the issue
+- Your environment details (OS, Docker version, etc.)
+- Client library and version information
 
-Providing as much information as possible will help the maintainers and community assist you.
+### Check Resources
+1. **GitHub Issues**: [https://github.com/RustNSparks/sockudo/issues](https://github.com/RustNSparks/sockudo/issues)
+2. **Documentation**: Review all relevant configuration guides
+3. **Community Forums**: Check if others have faced similar issues
+
+### Creating Bug Reports
+When opening a GitHub issue:
+- Use a descriptive title
+- Provide complete reproduction steps
+- Include configuration and log files
+- Specify your environment details
+- Mention any workarounds you've tried
+
+### Emergency Procedures
+For production issues:
+1. **Immediate**: Switch to fallback/backup instance if available
+2. **Short-term**: Disable problematic features (debug mode, specific adapters)
+3. **Investigation**: Enable debug logging and collect detailed information
+4. **Resolution**: Apply fixes and test in staging before production
+
+## Prevention Strategies
+
+### Monitoring and Alerting
+Set up proper monitoring to catch issues early:
+```yaml
+# Prometheus alert example
+- alert: SockudoHighErrorRate
+  expr: rate(sockudo_errors_total[5m]) > 10
+  for: 2m
+  annotations:
+    summary: "High error rate detected"
+```
+
+### Health Checks
+Implement automated health checks:
+```bash
+#!/bin/bash
+# health-check.sh
+
+SOCKUDO_HOST="localhost"
+SOCKUDO_PORT="6001"
+APP_ID="your-app-id"
+
+# Check if server is responding
+if ! curl -f -s "http://${SOCKUDO_HOST}:${SOCKUDO_PORT}/usage" > /dev/null; then
+    echo "CRITICAL: Sockudo server not responding"
+    exit 2
+fi
+
+# Check app health
+if ! curl -f -s "http://${SOCKUDO_HOST}:${SOCKUDO_PORT}/up/${APP_ID}" > /dev/null; then
+    echo "WARNING: App ${APP_ID} not healthy"
+    exit 1
+fi
+
+# Check metrics endpoint
+if ! curl -f -s "http://${SOCKUDO_HOST}:9601/metrics" > /dev/null; then
+    echo "WARNING: Metrics endpoint not responding"
+    exit 1
+fi
+
+echo "OK: All health checks passed"
+exit 0
+```
+
+### Configuration Validation
+```bash
+#!/bin/bash
+# validate-config.sh
+
+CONFIG_FILE="config/config.json"
+
+# Validate JSON syntax
+if ! jq empty "$CONFIG_FILE" 2>/dev/null; then
+    echo "ERROR: Invalid JSON in $CONFIG_FILE"
+    exit 1
+fi
+
+# Check required fields
+if ! jq -e '.host' "$CONFIG_FILE" >/dev/null; then
+    echo "ERROR: Missing 'host' configuration"
+    exit 1
+fi
+
+if ! jq -e '.port' "$CONFIG_FILE" >/dev/null; then
+    echo "ERROR: Missing 'port' configuration"
+    exit 1
+fi
+
+# Check SSL configuration if enabled
+if jq -e '.ssl.enabled == true' "$CONFIG_FILE" >/dev/null; then
+    CERT_PATH=$(jq -r '.ssl.cert_path' "$CONFIG_FILE")
+    KEY_PATH=$(jq -r '.ssl.key_path' "$CONFIG_FILE")
+    
+    if [[ ! -f "$CERT_PATH" ]]; then
+        echo "ERROR: SSL certificate not found: $CERT_PATH"
+        exit 1
+    fi
+    
+    if [[ ! -f "$KEY_PATH" ]]; then
+        echo "ERROR: SSL private key not found: $KEY_PATH"
+        exit 1
+    fi
+fi
+
+echo "Configuration validation passed"
+```
+
+### Regular Maintenance
+```bash
+#!/bin/bash
+# maintenance.sh
+
+echo "Starting Sockudo maintenance tasks..."
+
+# Check log file sizes
+LOG_DIR="/var/log/sockudo"
+if [[ -d "$LOG_DIR" ]]; then
+    find "$LOG_DIR" -name "*.log" -size +100M -exec echo "Large log file: {}" \;
+fi
+
+# Check disk space
+DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+if [[ $DISK_USAGE -gt 80 ]]; then
+    echo "WARNING: Disk usage is ${DISK_USAGE}%"
+fi
+
+# Check memory usage
+MEM_USAGE=$(free | awk 'NR==2{printf "%.2f%%\n", $3*100/$2}' | sed 's/%//')
+if (( $(echo "$MEM_USAGE > 80" | bc -l) )); then
+    echo "WARNING: Memory usage is ${MEM_USAGE}%"
+fi
+
+# Check SSL certificate expiration
+if [[ -f "/etc/ssl/certs/sockudo.crt" ]]; then
+    DAYS_UNTIL_EXPIRY=$(openssl x509 -in /etc/ssl/certs/sockudo.crt -noout -checkend 2592000 && echo "30+" || echo "< 30")
+    if [[ "$DAYS_UNTIL_EXPIRY" == "< 30" ]]; then
+        echo "WARNING: SSL certificate expires in less than 30 days"
+    fi
+fi
+
+echo "Maintenance tasks completed"
+```
+
+## Common Error Messages and Solutions
+
+### "Address already in use"
+```
+Error: Address already in use (os error 98)
+```
+**Solution**: Another process is using the port. Find and stop it:
+```bash
+sudo lsof -i :6001
+sudo kill -9 <PID>
+# Or change Sockudo's port in configuration
+```
+
+### "Permission denied"
+```
+Error: Permission denied (os error 13)
+```
+**Solution**: File permission issues, usually with SSL certificates:
+```bash
+sudo chown sockudo:sockudo /etc/ssl/private/sockudo.key
+sudo chmod 640 /etc/ssl/private/sockudo.key
+```
+
+### "Connection refused" (Redis)
+```
+Error: Connection refused (Redis)
+```
+**Solution**: Redis server not running or not accessible:
+```bash
+# Start Redis
+sudo systemctl start redis
+# Or check Redis URL configuration
+```
+
+### "No route to host"
+```
+Error: No route to host (os error 113)
+```
+**Solution**: Network connectivity issue:
+```bash
+# Check firewall rules
+sudo iptables -L
+# Check network connectivity
+ping target-host
+```
+
+### "SSL handshake failed"
+```
+Error: SSL handshake failed
+```
+**Solution**: SSL certificate or configuration issues:
+```bash
+# Check certificate validity
+openssl x509 -in cert.pem -text -noout
+# Verify certificate chain
+openssl verify -CAfile ca-bundle.crt cert.pem
+```
+
+### "Authentication failed"
+```
+Error: Authentication failed for channel subscription
+```
+**Solution**: Private/presence channel auth issues:
+- Verify auth endpoint returns correct JSON format
+- Check app secret matches between client and server
+- Ensure auth endpoint is accessible and returns 200 status
+
+### "Rate limit exceeded"
+```
+Error: Rate limit exceeded
+```
+**Solution**: Client hitting rate limits:
+```json
+{
+  "rate_limiter": {
+    "api_rate_limit": {
+      "max_requests": 200,  // Increase if legitimate traffic
+      "window_seconds": 60
+    }
+  }
+}
+```
+
+## Debugging Specific Components
+
+### WebSocket Connections
+```bash
+# Test WebSocket handshake
+curl -i -N -H "Connection: Upgrade" \
+     -H "Upgrade: websocket" \
+     -H "Sec-WebSocket-Version: 13" \
+     -H "Sec-WebSocket-Key: test" \
+     http://localhost:6001/app/your-app-key
+
+# Use wscat for interactive testing
+wscat -c ws://localhost:6001/app/your-app-key
+```
+
+### Channel Subscriptions
+```bash
+# Test channel subscription via WebSocket
+echo '{"event":"pusher:subscribe","data":{"channel":"test-channel"}}' | wscat -c ws://localhost:6001/app/your-app-key
+```
+
+### Event Publishing
+```bash
+# Test event publishing via HTTP API
+curl -X POST "http://localhost:6001/apps/your-app-id/events" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test-event",
+    "channels": ["test-channel"],
+    "data": {"message": "test"}
+  }'
+```
+
+### Presence Channels
+```bash
+# Test presence channel subscription (requires auth)
+# First get auth token from your auth endpoint, then:
+echo '{
+  "event":"pusher:subscribe",
+  "data":{
+    "channel":"presence-test",
+    "auth":"your-auth-signature",
+    "channel_data":"{\"user_id\":\"123\",\"user_info\":{\"name\":\"Test\"}}"
+  }
+}' | wscat -c ws://localhost:6001/app/your-app-key
+```
+
+## Performance Debugging
+
+### Memory Profiling
+```bash
+# Monitor memory allocation patterns
+valgrind --tool=massif ./target/release/sockudo
+
+# Use heaptrack for detailed heap analysis
+heaptrack ./target/release/sockudo
+```
+
+### CPU Profiling
+```bash
+# Use perf for CPU profiling
+sudo perf record -g ./target/release/sockudo
+sudo perf report
+
+# Generate flame graphs
+sudo perf record -F 99 -g -p $(pgrep sockudo) -- sleep 30
+sudo perf script | flamegraph.pl > sockudo-flamegraph.svg
+```
+
+### Network Analysis
+```bash
+# Monitor network connections
+netstat -an | grep :6001
+
+# Capture network traffic
+sudo tcpdump -i any port 6001 -w sockudo-traffic.pcap
+
+# Analyze with Wireshark
+wireshark sockudo-traffic.pcap
+```
+
+## Environment-Specific Issues
+
+### Docker Issues
+```bash
+# Check container logs
+docker logs sockudo-container --tail=100
+
+# Execute commands inside container
+docker exec -it sockudo-container /bin/bash
+
+# Check resource limits
+docker stats sockudo-container
+
+# Inspect container configuration
+docker inspect sockudo-container
+```
+
+### Kubernetes Issues
+```bash
+# Check pod status
+kubectl get pods -l app=sockudo
+
+# View pod logs
+kubectl logs -f deployment/sockudo
+
+# Describe pod for events
+kubectl describe pod sockudo-pod-name
+
+# Check service and ingress
+kubectl get svc,ingress
+```
+
+### systemd Issues
+```bash
+# Check service status
+systemctl status sockudo.service
+
+# View service configuration
+systemctl cat sockudo.service
+
+# Check for failed starts
+journalctl -u sockudo.service --since today --grep "Failed"
+
+# Reload service configuration
+sudo systemctl daemon-reload
+sudo systemctl restart sockudo.service
+```
+
+By following this troubleshooting guide and using the provided diagnostic commands, you should be able to identify and resolve most common issues with Sockudo. Remember to always check the logs first and enable debug mode when investigating problems.

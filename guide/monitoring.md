@@ -1,160 +1,698 @@
+# guide/monitoring.md
+
 # Monitoring Sockudo
 
-Monitoring your Sockudo server is crucial for understanding its performance, identifying bottlenecks, and ensuring its reliability in a production environment. Sockudo can expose metrics via a Prometheus-compatible endpoint.
+Monitoring your Sockudo server is crucial for understanding its performance, identifying bottlenecks, and ensuring its reliability in a production environment. Sockudo can expose metrics via a Prometheus-compatible endpoint and provides comprehensive observability features.
 
 ## Enabling Metrics
 
-First, ensure that metrics are enabled in your Sockudo configuration. This is typically done in your `config.json` or via environment variables.
+First, ensure that metrics are enabled in your Sockudo configuration:
 
 ```json
-// config.json
 {
   "metrics": {
     "enabled": true,
     "driver": "prometheus",
-    "host": "0.0.0.0", // Or a specific IP for the metrics server
-    "port": 9601,     // Default metrics port
+    "host": "0.0.0.0",
+    "port": 9601,
     "prometheus": {
-      "prefix": "sockudo_" // Default prefix for metric names
+      "prefix": "sockudo_"
     }
   }
-  // ... other configurations
 }
 ```
 
-Refer to the Metrics Configuration page for detailed options.
+**Environment Variables:**
+```bash
+METRICS_ENABLED=true
+METRICS_HOST="0.0.0.0"
+METRICS_PORT=9601
+PROMETHEUS_METRICS_PREFIX="sockudo_"
+```
 
-By default, if enabled, the metrics will be available at `http://<metrics_host>:<metrics_port>/metrics` (e.g., `http://localhost:9601/metrics`). This endpoint should be scraped by your Prometheus server.
+By default, metrics will be available at `http://<metrics_host>:<metrics_port>/metrics` (e.g., `http://localhost:9601/metrics`).
 
 ## Key Metrics to Monitor
 
-While the exact metrics exposed can vary based on Sockudo's version and specific configuration (especially with different adapters or features enabled), here are common types of metrics you should look for and aim to track:
+Sockudo exposes comprehensive metrics across different categories:
 
-### Active Connections:
-- `sockudo_active_connections` (or similar): Total number of currently active WebSocket connections.
-- Metrics per application ID (`app_id` label) might also be available.
+### Connection Metrics
 
-### Message Throughput:
-- `sockudo_messages_sent_total`: Total number of messages sent by the server to clients.
-- `sockudo_messages_received_total`: Total number of messages received by the server from clients (e.g., client events).
-- These might have labels for `app_id` or `channel`.
+#### Active Connections
+- **`sockudo_active_connections`**: Current number of active WebSocket connections
+- **`sockudo_connections_per_app`**: Active connections broken down by application
+- **`sockudo_total_connections`**: Total number of connections established since startup
 
-### API Usage (HTTP API):
-- `sockudo_http_api_requests_total`: Counter for HTTP API requests, possibly with labels for `path`, `method`, and `status_code`.
-- `sockudo_http_api_request_duration_seconds`: Histogram or summary of HTTP API request latencies.
+#### Connection Events
+- **`sockudo_connection_established_total`**: Total connections established
+- **`sockudo_connection_closed_total`**: Total connections closed
+- **`sockudo_connection_errors_total`**: Connection errors (timeouts, protocol errors)
 
-### Channel Statistics:
-- `sockudo_active_channels`: Total number of channels with at least one subscriber.
-- `sockudo_channel_subscriptions_total`: Counter for channel subscription events.
-- `sockudo_channel_unsubscriptions_total`: Counter for channel unsubscription events.
+### Message Throughput
 
-### Presence Channel Metrics:
-- `sockudo_presence_channel_members`: Current number of members in presence channels, possibly per channel or app.
+#### Message Flows
+- **`sockudo_messages_sent_total`**: Total messages sent by the server to clients
+- **`sockudo_messages_received_total`**: Total messages received from clients
+- **`sockudo_broadcast_messages_total`**: Messages broadcast to multiple subscribers
+- **`sockudo_client_events_total`**: Client-triggered events processed
 
-### Error Rates:
-- `sockudo_errors_total`: Counter for various types of errors occurring in the server, possibly with a `type` or `source` label.
-- `sockudo_websocket_errors_total`: Errors specific to WebSocket connections or protocol handling.
-- `sockudo_authentication_failures_total`: Count of failed authentication attempts for private/presence channels.
+#### Message Processing
+- **`sockudo_message_processing_duration_seconds`**: Histogram of message processing times
+- **`sockudo_message_size_bytes`**: Histogram of message sizes
 
-### Adapter Performance (if exposed by the specific adapter):
-- Metrics related to the chosen adapter (e.g., Redis/NATS publish/subscribe rates, error counts, latencies for adapter operations).
+### HTTP API Performance
 
-### Queue Performance (if webhooks or other features use it):
-- `sockudo_queue_jobs_processed_total`: Number of queued jobs (e.g., webhooks) processed.
-- `sockudo_queue_jobs_failed_total`: Number of failed jobs.
-- `sockudo_queue_active_jobs`: Current number of jobs in the queue.
-- `sockudo_queue_job_duration_seconds`: Histogram or summary of job processing times.
+#### Request Metrics
+- **`sockudo_http_requests_total`**: Total HTTP API requests with labels for method, endpoint, status
+- **`sockudo_http_request_duration_seconds`**: Request latency histogram
+- **`sockudo_http_response_size_bytes`**: Response size histogram
 
-### Rate Limiting:
-- `sockudo_rate_limit_triggered_total`: Counter for instances where rate limits were hit, possibly with labels for the type of limit (API, WebSocket).
+#### API Errors
+- **`sockudo_http_errors_total`**: HTTP errors by status code
+- **`sockudo_api_authentication_failures_total`**: Failed authentication attempts
 
-### System Metrics (from the Rust process itself, often collected by node_exporter or similar OS-level monitoring):
-- CPU Usage
-- Memory Usage (RSS, VMS)
-- File Descriptors (open/max)
-- Network I/O (bytes sent/received, connections)
+### Channel Statistics
 
-Always inspect the `/metrics` endpoint of your running Sockudo instance to see the exact list of available metrics and their names.
+#### Channel Activity
+- **`sockudo_active_channels`**: Current number of channels with subscribers
+- **`sockudo_channels_per_app`**: Active channels per application
+- **`sockudo_channel_subscriptions_total`**: Total channel subscriptions
+- **`sockudo_channel_unsubscriptions_total`**: Total channel unsubscriptions
+
+#### Presence Channels
+- **`sockudo_presence_members`**: Current members in presence channels
+- **`sockudo_presence_events_total`**: Member join/leave events
+
+### Rate Limiting
+
+#### Rate Limit Events
+- **`sockudo_rate_limit_triggered_total`**: Rate limits triggered by type (API, WebSocket)
+- **`sockudo_rate_limit_checks_total`**: Total rate limit checks with results
+
+### Queue Performance (if enabled)
+
+#### Job Processing
+- **`sockudo_queue_jobs_processed_total`**: Successfully processed queue jobs
+- **`sockudo_queue_jobs_failed_total`**: Failed queue jobs
+- **`sockudo_queue_active_jobs`**: Current jobs waiting in queue
+- **`sockudo_queue_job_duration_seconds`**: Job processing time histogram
+
+### Webhook Metrics
+
+#### Webhook Delivery
+- **`sockudo_webhooks_sent_total`**: Total webhooks sent
+- **`sockudo_webhooks_failed_total`**: Failed webhook deliveries
+- **`sockudo_webhook_duration_seconds`**: Webhook request duration
+- **`sockudo_webhook_retries_total`**: Webhook retry attempts
+
+### Cache Performance
+
+#### Cache Operations
+- **`sockudo_cache_hits_total`**: Cache hits
+- **`sockudo_cache_misses_total`**: Cache misses
+- **`sockudo_cache_operations_total`**: Total cache operations
+- **`sockudo_cache_memory_usage_bytes`**: Current cache memory usage
+
+### Adapter Metrics
+
+#### Adapter Performance
+- **`sockudo_adapter_operations_total`**: Adapter operations (publish, subscribe)
+- **`sockudo_adapter_errors_total`**: Adapter errors
+- **`sockudo_adapter_latency_seconds`**: Adapter operation latency
+- **`sockudo_adapter_message_size_bytes`**: Size of messages through adapter
 
 ## Setting up Prometheus
 
-Prometheus is an open-source monitoring and alerting toolkit. To scrape metrics from Sockudo:
+### Prometheus Configuration
 
-1. **Install and Run Prometheus**: Follow the official Prometheus documentation.
-2. **Configure Prometheus Scrape Job**:
-   Add a scrape job to your `prometheus.yml` configuration file:
+Add a scrape job to your `prometheus.yml`:
 
 ```yaml
 global:
-  scrape_interval: 15s # How frequently to scrape targets
+  scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
   - job_name: 'sockudo'
     static_configs:
-      - targets: ['localhost:9601'] # Replace with your Sockudo metrics endpoint(s)
-        # If running multiple Sockudo instances, list them all:
-        # targets: ['sockudo-node1.example.com:9601', 'sockudo-node2.example.com:9601']
-    # If your metrics prefix in Sockudo config is not 'sockudo_',
-    # you might want to use metric_relabel_configs to standardize or adjust.
-    # For example, if Sockudo's prefix is 'my_company_sockudo_':
-    # metric_relabel_configs:
-    #   - source_labels: [__name__]
-    #     regex: 'my_company_sockudo_(.*)'
-    #     target_label: __name__
-    #     replacement: 'sockudo_$1' # Optional: to normalize names in Prometheus
+      - targets: ['localhost:9601']
+        labels:
+          instance: 'sockudo-1'
+          environment: 'production'
+    scrape_interval: 15s
+    metrics_path: /metrics
+    scheme: http
 ```
 
-3. Restart Prometheus to apply the new configuration.
+### Multi-Instance Setup
+
+For multiple Sockudo instances:
+
+```yaml
+scrape_configs:
+  - job_name: 'sockudo'
+    static_configs:
+      - targets: 
+          - 'sockudo-1.example.com:9601'
+          - 'sockudo-2.example.com:9601'
+          - 'sockudo-3.example.com:9601'
+        labels:
+          environment: 'production'
+          cluster: 'main'
+```
+
+### Docker Compose with Prometheus
+
+```yaml
+version: '3.8'
+services:
+  sockudo:
+    image: sockudo/sockudo:latest
+    ports:
+      - "6001:6001"
+      - "9601:9601"
+    environment:
+      - METRICS_ENABLED=true
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9601"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+volumes:
+  prometheus_data:
+```
+
+### Kubernetes Service Discovery
+
+```yaml
+scrape_configs:
+  - job_name: 'sockudo'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['sockudo-namespace']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: sockudo
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+```
 
 ## Visualization with Grafana
 
-Grafana is a popular open-source platform for monitoring and observability, often used with Prometheus.
+### Installing Grafana
 
-1. **Install and Run Grafana**: Follow the official Grafana documentation.
-2. **Add Prometheus as a Data Source**: Configure Grafana to connect to your Prometheus instance (usually at `http://prometheus_host:9090`).
-3. **Create Dashboards**: Build dashboards in Grafana to visualize the Sockudo metrics scraped by Prometheus. You can create panels for:
-   - Active Connections Over Time (per app, total)
-   - Message Rates (Sent/Received)
-   - API Request Latency Percentiles (e.g., p95, p99)
-   - Error Rates (total, per error type)
-   - Resource Usage (CPU/Memory, if collected separately via node_exporter)
-   - Queue Depths and Throughput
-   - Adapter-specific metrics
+```yaml
+# Add to docker-compose.yml
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+```
 
-There might be community-contributed Grafana dashboards for Pusher-like servers or general WebSocket applications that you can adapt.
+### Key Dashboard Panels
 
-## Alerting
+#### 1. Connection Overview
+```promql
+# Active connections gauge
+sockudo_active_connections
 
-Configure alerting rules in Prometheus (using Alertmanager) or Grafana based on Sockudo metrics to get notified of critical issues, such as:
+# Connection rate (connections per second)
+rate(sockudo_connection_established_total[5m])
 
-- High error rates (e.g., authentication failures, API errors).
-- Drastic drops in active connections.
-- High API or message processing latencies.
-- Queue length growing excessively or jobs failing consistently.
-- Server instances becoming unresponsive (Prometheus `up` metric for the scrape job).
-- High resource utilization (CPU/memory saturation).
+# Connections by app
+sockudo_active_connections by (app_id)
+```
 
-Example Prometheus alert rule (conceptual):
+#### 2. Message Throughput
+```promql
+# Messages sent rate
+rate(sockudo_messages_sent_total[5m])
+
+# Messages received rate
+rate(sockudo_messages_received_total[5m])
+
+# Client events rate
+rate(sockudo_client_events_total[5m])
+
+# Broadcast efficiency (messages sent vs received)
+rate(sockudo_broadcast_messages_total[5m]) / rate(sockudo_messages_received_total[5m])
+```
+
+#### 3. HTTP API Performance
+```promql
+# Request rate
+rate(sockudo_http_requests_total[5m])
+
+# 95th percentile response time
+histogram_quantile(0.95, rate(sockudo_http_request_duration_seconds_bucket[5m]))
+
+# Error rate percentage
+rate(sockudo_http_requests_total{status=~"5.."}[5m]) / rate(sockudo_http_requests_total[5m]) * 100
+
+# Requests by endpoint
+rate(sockudo_http_requests_total[5m]) by (endpoint)
+```
+
+#### 4. Channel Activity
+```promql
+# Active channels
+sockudo_active_channels
+
+# Subscription rate
+rate(sockudo_channel_subscriptions_total[5m])
+
+# Presence channel members
+sockudo_presence_members
+
+# Channel activity by type
+sockudo_active_channels by (channel_type)
+```
+
+#### 5. System Health
+```promql
+# Rate limit triggers
+rate(sockudo_rate_limit_triggered_total[5m])
+
+# Queue depth (if using queues)
+sockudo_queue_active_jobs
+
+# Cache hit rate
+rate(sockudo_cache_hits_total[5m]) / (rate(sockudo_cache_hits_total[5m]) + rate(sockudo_cache_misses_total[5m])) * 100
+
+# Webhook success rate
+rate(sockudo_webhooks_sent_total[5m]) / (rate(sockudo_webhooks_sent_total[5m]) + rate(sockudo_webhooks_failed_total[5m])) * 100
+```
+
+### Sample Grafana Dashboard JSON
+
+```json
+{
+  "dashboard": {
+    "title": "Sockudo Metrics",
+    "panels": [
+      {
+        "title": "Active Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sockudo_active_connections",
+            "legendFormat": "{{instance}}"
+          }
+        ]
+      },
+      {
+        "title": "Message Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(sockudo_messages_sent_total[5m])",
+            "legendFormat": "Sent"
+          },
+          {
+            "expr": "rate(sockudo_messages_received_total[5m])",
+            "legendFormat": "Received"
+          }
+        ]
+      },
+      {
+        "title": "API Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(sockudo_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(sockudo_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(sockudo_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Alerting Rules
+
+### Prometheus Alerting Rules
+
+Create an `alerts.yml` file:
 
 ```yaml
 groups:
-- name: SockudoAlerts
-  rules:
-  - alert: SockudoHighErrorRate
-    # Example: if the rate of sockudo_errors_total over 5m is significant
-    expr: sum(rate(sockudo_errors_total{job="sockudo"}[5m])) > 10 # Adjust threshold
-    for: 2m # Alert if condition holds for 2 minutes
-    labels:
-      severity: critical
-    annotations:
-      summary: High error rate on Sockudo (instance {{$labels.instance}})
-      description: "Sockudo is experiencing a high rate of errors: {{$value}} errors/sec."
+  - name: sockudo_alerts
+    rules:
+      # Connection Alerts
+      - alert: SockudoHighConnectionCount
+        expr: sockudo_active_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High connection count on {{ $labels.instance }}"
+          description: "Sockudo instance {{ $labels.instance }} has {{ $value }} active connections"
 
-  - alert: SockudoInstanceDown
-    expr: up{job="sockudo"} == 0
-    for: 1m
-    labels:
-      severity: critical
-    annotations:
-      summary: Sockudo instance down (instance {{$labels.instance}})
+      - alert: SockudoConnectionDrops
+        expr: rate(sockudo_connection_closed_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High connection drop rate on {{ $labels.instance }}"
+          description: "Connection drop rate is {{ $value }} per second"
+
+      # Performance Alerts
+      - alert: SockudoHighLatency
+        expr: histogram_quantile(0.95, rate(sockudo_http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High API latency on {{ $labels.instance }}"
+          description: "95th percentile latency is {{ $value }}s"
+
+      - alert: SockudoHighErrorRate
+        expr: rate(sockudo_http_requests_total{status=~"5.."}[5m]) / rate(sockudo_http_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.instance }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      # System Health Alerts
+      - alert: SockudoInstanceDown
+        expr: up{job="sockudo"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Sockudo instance down"
+          description: "Instance {{ $labels.instance }} is not responding"
+
+      - alert: SockudoRateLimitTriggered
+        expr: rate(sockudo_rate_limit_triggered_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate limit triggers on {{ $labels.instance }}"
+          description: "Rate limits are being triggered {{ $value }} times per second"
+
+      # Queue Alerts (if using queues)
+      - alert: SockudoQueueBacklog
+        expr: sockudo_queue_active_jobs > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High queue backlog on {{ $labels.instance }}"
+          description: "Queue has {{ $value }} pending jobs"
+
+      - alert: SockudoWebhookFailures
+        expr: rate(sockudo_webhooks_failed_total[5m]) / rate(sockudo_webhooks_sent_total[5m]) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High webhook failure rate on {{ $labels.instance }}"
+          description: "Webhook failure rate is {{ $value | humanizePercentage }}"
+
+      # Cache Performance
+      - alert: SockudoLowCacheHitRate
+        expr: rate(sockudo_cache_hits_total[5m]) / (rate(sockudo_cache_hits_total[5m]) + rate(sockudo_cache_misses_total[5m])) < 0.7
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low cache hit rate on {{ $labels.instance }}"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
 ```
+
+### Alertmanager Configuration
+
+```yaml
+# alertmanager.yml
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@yourcompany.com'
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+
+receivers:
+  - name: 'web.hook'
+    email_configs:
+      - to: 'admin@yourcompany.com'
+        subject: 'Sockudo Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+    
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#alerts'
+        title: 'Sockudo Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+```
+
+## Logging and Log Aggregation
+
+### Structured Logging
+
+Configure Sockudo for structured logging:
+
+```json
+{
+  "debug": false,
+  "log_format": "json"
+}
+```
+
+**Environment Variables:**
+```bash
+LOG_FORMAT=json
+LOG_LEVEL=info
+```
+
+### Log Aggregation with ELK Stack
+
+#### Filebeat Configuration
+
+```yaml
+# filebeat.yml
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/sockudo/*.log
+  fields:
+    service: sockudo
+    environment: production
+  fields_under_root: true
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "sockudo-logs-%{+yyyy.MM.dd}"
+
+setup.template:
+  name: "sockudo-logs"
+  pattern: "sockudo-logs-*"
+```
+
+#### Logstash Configuration
+
+```ruby
+# logstash.conf
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  if [service] == "sockudo" {
+    json {
+      source => "message"
+    }
+    
+    date {
+      match => [ "timestamp", "ISO8601" ]
+    }
+    
+    mutate {
+      add_field => { "[@metadata][index]" => "sockudo-logs-%{+YYYY.MM.dd}" }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["elasticsearch:9200"]
+    index => "%{[@metadata][index]}"
+  }
+}
+```
+
+### Log Queries and Dashboards
+
+#### Common Log Queries (Kibana/Elasticsearch)
+
+```json
+// Error logs
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"service": "sockudo"}},
+        {"term": {"level": "ERROR"}}
+      ],
+      "filter": {
+        "range": {
+          "@timestamp": {
+            "gte": "now-1h"
+          }
+        }
+      }
+    }
+  }
+}
+
+// Connection events
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"service": "sockudo"}},
+        {"wildcard": {"message": "*connection*"}}
+      ]
+    }
+  }
+}
+
+// Authentication failures
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"service": "sockudo"}},
+        {"match": {"message": "authentication failed"}}
+      ]
+    }
+  }
+}
+```
+
+## Performance Monitoring
+
+### System Resource Monitoring
+
+Use node_exporter with Prometheus to monitor system resources:
+
+```yaml
+# Add to docker-compose.yml
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points'
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($|/)'
+```
+
+### Key System Metrics
+
+```promql
+# CPU usage
+100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+# Memory usage
+(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+
+# Disk usage
+(1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100
+
+# Network I/O
+rate(node_network_receive_bytes_total[5m])
+rate(node_network_transmit_bytes_total[5m])
+
+# File descriptors
+node_filefd_allocated / node_filefd_maximum * 100
+```
+
+## Best Practices
+
+### Monitoring Strategy
+
+1. **Start with key metrics**: Focus on connection count, message rates, and error rates
+2. **Set meaningful thresholds**: Base alerts on your actual usage patterns
+3. **Use percentiles**: Monitor 95th and 99th percentiles for latency metrics
+4. **Monitor trends**: Look for gradual changes that might indicate issues
+
+### Alert Fatigue Prevention
+
+1. **Tune alert thresholds**: Avoid false positives
+2. **Use appropriate time windows**: Don't alert on brief spikes
+3. **Group related alerts**: Use alert grouping in Alertmanager
+4. **Regular review**: Periodically review and adjust alert rules
+
+### Dashboard Design
+
+1. **Hierarchy of dashboards**: Overview → Detailed → Troubleshooting
+2. **Consistent time ranges**: Use standard time ranges across panels
+3. **Meaningful legends**: Use clear, descriptive legend formats
+4. **Color coding**: Use consistent colors for similar metrics
+
+### Data Retention
+
+1. **Metrics retention**: Configure appropriate retention for Prometheus
+2. **Log retention**: Set up log rotation and archival policies
+3. **Historical analysis**: Keep enough history for trend analysis
+4. **Storage costs**: Balance retention needs with storage costs
+
+By implementing comprehensive monitoring with Prometheus, Grafana, and proper alerting, you can ensure your Sockudo deployment remains healthy, performant, and reliable in production environments.

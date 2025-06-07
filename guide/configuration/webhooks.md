@@ -30,7 +30,7 @@ Sockudo can batch multiple webhook events together before sending them to your a
 - **Description:** The maximum duration (in milliseconds) to buffer webhook events before sending a batch, if batching is enabled. Even if the batch isn't full, it will be sent after this duration.
 - **Default Value:** `50` (milliseconds)
 
-### Example (`config.json` for global batching)
+### Example Global Webhook Configuration
 
 ```json
 {
@@ -40,7 +40,6 @@ Sockudo can batch multiple webhook events together before sending them to your a
       "duration": 100
     }
   }
-  // ... other configurations
 }
 ```
 
@@ -48,24 +47,28 @@ Sockudo can batch multiple webhook events together before sending them to your a
 
 Individual webhook endpoints, the events they subscribe to, and other details are configured within each application's definition. This is typically done in the `apps` array under `app_manager.array` if using the memory app manager, or in the corresponding database record if using a database-backed app manager.
 
-Refer to the App object structure within the App Manager Configuration for how to define the `webhooks` array for an app.
+### Webhook Object Structure
 
-### Webhook Object Structure (within an App's `webhooks` array)
+Each webhook configuration within an app's `webhooks` array supports the following properties:
 
-This structure is based on `src/webhook/types.rs`.
-
-#### Properties
+#### HTTP Webhooks
 
 - **`url`** (string, optional): The HTTP(S) URL of your application's endpoint that will receive the webhook POST requests.
 
+- **`headers`** (object, map of string to string, optional): Custom HTTP headers to include in the webhook request sent to the `url`.
+
+#### AWS Lambda Webhooks
+
 - **`lambda_function`** (string, optional): The name of an AWS Lambda function to invoke for the webhook.
 
-- **`lambda`** (object, optional, structure based on `LambdaWebhookConfig`):
+- **`lambda`** (object, optional): Detailed Lambda configuration with the following fields:
   - **`function_name`** (string): Name of the Lambda function.
   - **`invocation_type`** (string, optional): Lambda invocation type (e.g., "RequestResponse", "Event"). Default: "Event".
   - **`qualifier`** (string, optional): Lambda function version or alias.
-  - **`region`** (string, optional): AWS region for the Lambda function. If not set, might use default from SDK.
+  - **`region`** (string, optional): AWS region for the Lambda function. If not set, uses default from SDK.
   - **`endpoint_url`** (string, optional): Custom AWS Lambda endpoint URL (for testing with LocalStack, etc.).
+
+#### Event Configuration
 
 - **`event_types`** (array of strings, required): A list of event types that should trigger this webhook. Common Pusher event types include:
   - `channel_occupied`: Sent when a channel first becomes active (first subscriber).
@@ -74,13 +77,15 @@ This structure is based on `src/webhook/types.rs`.
   - `member_removed`: Sent when a user leaves a presence channel.
   - `client_event`: Sent when a client sends an event on a channel (if enabled and configured).
 
-- **`filter`** (object, optional, structure based on `WebhookFilter`): Defines filters for when to send webhooks.
+#### Filtering
+
+- **`filter`** (object, optional): Defines filters for when to send webhooks:
   - **`channel_type`** (string, optional): Filter by channel type (e.g., "public", "private", "presence").
   - **`channel_prefix`** (string, optional): Filter by channel name prefix (e.g., "private-").
 
-- **`headers`** (object, map of string to string, optional): Custom HTTP headers to include in the webhook request sent to a `url`.
+## Example Webhook Configurations
 
-### Example (App definition with webhooks in `config.json`)
+### HTTP Webhook Example
 
 ```json
 {
@@ -92,22 +97,17 @@ This structure is based on `src/webhook/types.rs`.
           "id": "my-app-with-webhooks",
           "key": "app-key-wh",
           "secret": "app-secret-wh",
+          "max_connections": "1000",
+          "enable_client_messages": true,
+          "enabled": true,
+          "max_client_events_per_second": "20",
           "webhooks": [
             {
               "url": "https://api.example.com/sockudo/events",
               "event_types": ["channel_occupied", "channel_vacated"],
               "headers": {
-                "X-Custom-Auth": "mysecrettoken"
-              }
-            },
-            {
-              "lambda": {
-                "function_name": "sockudoPresenceHandler",
-                "region": "us-east-1"
-              },
-              "event_types": ["member_added", "member_removed"],
-              "filter": {
-                "channel_prefix": "presence-"
+                "X-Custom-Auth": "mysecrettoken",
+                "User-Agent": "Sockudo-Webhook/1.0"
               }
             }
           ]
@@ -124,11 +124,64 @@ This structure is based on `src/webhook/types.rs`.
 }
 ```
 
-## Webhook Payload
+### AWS Lambda Webhook Example
 
-The payload sent to your webhook endpoint will typically be a JSON object (or an array of objects if batched) containing information about the event(s). The structure is compatible with Pusher webhook payloads.
+```json
+{
+  "webhooks": [
+    {
+      "lambda": {
+        "function_name": "sockudoPresenceHandler",
+        "region": "us-east-1",
+        "invocation_type": "Event"
+      },
+      "event_types": ["member_added", "member_removed"],
+      "filter": {
+        "channel_prefix": "presence-"
+      }
+    }
+  ]
+}
+```
 
-### Example single event payload for `member_added`
+### Mixed Webhook Configuration
+
+```json
+{
+  "webhooks": [
+    {
+      "url": "https://api.example.com/webhooks/general",
+      "event_types": ["channel_occupied", "channel_vacated"],
+      "headers": {
+        "Authorization": "Bearer your-api-token"
+      }
+    },
+    {
+      "lambda_function": "handleClientEvents",
+      "event_types": ["client_event"],
+      "filter": {
+        "channel_type": "presence"
+      }
+    },
+    {
+      "url": "https://analytics.example.com/events",
+      "event_types": ["member_added", "member_removed"],
+      "headers": {
+        "X-Source": "sockudo"
+      },
+      "filter": {
+        "channel_prefix": "presence-chat"
+      }
+    }
+  ]
+}
+```
+
+## Webhook Payload Structure
+
+The payload sent to your webhook endpoint will be a JSON object (or an array of objects if batched) containing information about the event(s). The structure is compatible with Pusher webhook payloads.
+
+### Single Event Payload
 
 ```json
 {
@@ -142,7 +195,7 @@ The payload sent to your webhook endpoint will typically be a JSON object (or an
 }
 ```
 
-### Batched payload example
+### Batched Payload
 
 If batching is enabled, your endpoint might receive an array:
 
@@ -154,28 +207,98 @@ If batching is enabled, your endpoint might receive an array:
       "name": "member_added",
       "channel": "presence-chat",
       "user_id": "u1",
-      "...": "..."
+      "time_ms": 1678886400100
     },
     {
       "name": "channel_vacated",
       "channel": "private-room-1",
-      "...": "..."
+      "time_ms": 1678886400200
     }
   ]
 }
 ```
 
-### Best Practices
+## Security Considerations
 
-Your application should be prepared to:
+### HTTPS
+Always use `https://` URLs for your webhook endpoints in production.
 
-- Parse this JSON and handle the events accordingly
-- Handle retries (if Sockudo implements them)
-- Respond quickly with a 2xx status code to acknowledge receipt
-- Be robust in handling webhook failures
+### Signature Verification
+Sockudo includes webhook signature verification compatible with Pusher. The request includes:
+- `X-Pusher-Key` header: Your app key
+- `X-Pusher-Signature` header: HMAC SHA256 signature
 
-Non-2xx responses may be considered failures by Sockudo.
+**Verification Process:**
+```python
+import hmac
+import hashlib
 
-## Queue for Webhooks
+def verify_webhook(request_body, signature, app_secret):
+    expected_signature = hmac.new(
+        app_secret.encode('utf-8'),
+        request_body,
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+```
 
-Webhook processing often utilizes the Queue System. If a queue driver (like Redis or SQS) is configured, webhook events are typically pushed onto the queue and processed by background workers.
+### IP Whitelisting
+If your Sockudo server has static IPs, you can whitelist them on your application server's firewall.
+
+## Queue Integration
+
+Webhook processing utilizes the Queue System for reliability and performance. If a queue driver (like Redis or SQS) is configured, webhook events are pushed onto the queue and processed by background workers.
+
+### Queue Configuration for Webhooks
+
+```json
+{
+  "queue": {
+    "driver": "redis",
+    "redis": {
+      "concurrency": 5,
+      "prefix": "sockudo_queue:"
+    }
+  }
+}
+```
+
+## Error Handling and Retries
+
+### Response Requirements
+Your webhook endpoint should:
+- Respond with a 2xx status code to acknowledge receipt
+- Respond quickly (within a few seconds)
+- Handle retries gracefully (webhooks may be sent multiple times)
+
+### Timeout and Retry Logic
+- **Timeouts**: Sockudo has configurable timeouts for webhook requests
+- **Retries**: Failed webhooks are retried with exponential backoff when using persistent queue drivers
+- **Dead Letter Queue**: Persistently failed webhooks can be moved to a dead letter queue for manual inspection
+
+## Best Practices
+
+1. **Endpoint Design**:
+  - Make your webhook endpoints idempotent
+  - Include proper error handling and logging
+  - Validate incoming signatures
+  - Process webhooks asynchronously when possible
+
+2. **Testing**:
+  - Use tools like ngrok for local development
+  - Test with webhook.site for quick verification
+  - Implement proper monitoring and alerting
+
+3. **Performance**:
+  - Enable batching for high-volume scenarios
+  - Use appropriate queue drivers for your scale
+  - Monitor webhook processing metrics
+
+4. **Security**:
+  - Always verify webhook signatures
+  - Use HTTPS in production
+  - Implement proper authentication and authorization
+  - Consider IP whitelisting for additional security
+
+For more information about webhook payloads and event types, see the [Webhooks Guide](./webhooks.md).
