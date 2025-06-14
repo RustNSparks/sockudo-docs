@@ -141,6 +141,7 @@ export default defineConfig({
             { text: "Acknowledgements", link: "/about/acknowledgements" },
             { text: "Contributing", link: "/advanced/contributing" }, // Moved contributing here as it's more "about" the project
           ],
+
         },
       ],
     },
@@ -148,6 +149,7 @@ export default defineConfig({
     socialLinks: [
       { icon: "github", link: "https://github.com/RustNSparks/sockudo" },
       { icon: "discord", link: "https://discord.gg/MRhmYg68RY" },
+      { icon: "x", link: "https://x.com/RustNSparks" },
     ],
 
     editLink: {
