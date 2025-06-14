@@ -150,7 +150,7 @@ export default defineConfig({
     socialLinks: [
       { icon: "github", link: "https://github.com/RustNSparks/sockudo" },
       { icon: "discord", link: "https://discord.gg/MRhmYg68RY" },
-      { icon: "x", link: "https://x.com/RustNSparks" },
+      { icon: "x", link: "https://x.com/sockudorealtime" },
     ],
 
     editLink: {
