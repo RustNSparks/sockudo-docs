@@ -69,6 +69,7 @@ export default defineConfig({
             { text: "Deployment", link: "/guide/deployment" },
             { text: "Monitoring", link: "/guide/monitoring" },
             { text: "Troubleshooting", link: "/guide/troubleshooting" },
+            { text: "Performance Benchmarks", link: "/guide/performance-benchmarks" },
           ],
         },
       ],
