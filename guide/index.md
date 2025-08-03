@@ -15,6 +15,19 @@ Sockudo provides real-time, bidirectional communication between clients and serv
 - **Comprehensive Features**: Rate limiting, webhooks, metrics, SSL/TLS, and more
 - **Docker Ready**: Full Docker and Kubernetes support for modern deployments
 
+## Performance Highlights
+
+Sockudo delivers exceptional performance compared to alternatives. In comprehensive benchmarks against Soketi (Node.js-based Pusher server):
+
+- **6.5x faster message latency**: 1.84ms vs 12.01ms average
+- **8x faster 95th percentile**: 3ms vs 24ms response times
+- **16% higher throughput**: 2,927 vs 2,523 messages/second
+- **Efficient resource usage**: Superior performance with lower CPU and memory overhead
+
+Built with Rust's zero-cost abstractions and memory safety, Sockudo handles thousands of concurrent connections while maintaining sub-5ms latency for real-time applications.
+
+**[📊 View Complete Performance Benchmarks](./performance-benchmarks.md)**
+
 ## Quick Navigation
 
 ### Getting Started
@@ -27,7 +40,8 @@ Sockudo provides real-time, bidirectional communication between clients and serv
 - **[Scaling](./scaling.md)**: Scale Sockudo using different adapters and load balancing
 - **[Monitoring](./monitoring.md)**: Monitor performance with Prometheus and Grafana
 
-### Operations
+### Performance & Operations
+- **[Performance Benchmarks](./performance-benchmarks.md)**: Detailed performance analysis and optimization
 - **[Deployment](./deployment.md)**: Production deployment strategies and best practices
 - **[Troubleshooting](./troubleshooting.md)**: Diagnose and solve common issues
 - **[SSL Configuration](./ssl-configuration.md)**: Secure your connections with SSL/TLS
@@ -35,6 +49,7 @@ Sockudo provides real-time, bidirectional communication between clients and serv
 ## Architecture Overview
 
 Sockudo is designed with modularity and scalability in mind:
+
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -57,207 +72,49 @@ Sockudo is designed with modularity and scalability in mind:
                     │   SQS/Cluster)   │    │                  │    │                  │
                     └──────────────────┘    └──────────────────┘    └──────────────────┘
 ```
+### Core Components
 
-### Key Components
+- **WebSocket Server**: High-performance WebSocket handling with Pusher protocol compatibility
+- **HTTP API**: RESTful API for publishing events and managing channels
+- **Adapters**: Pluggable backends for horizontal scaling (Local, Redis, NATS, Redis Cluster)
+- **App Manager**: Flexible application management with multiple database backends
+- **Metrics & Monitoring**: Built-in Prometheus metrics for observability
+- **Rate Limiting**: Configurable rate limiting to protect against abuse
 
-- **Adapter**: Handles message broadcasting between instances for horizontal scaling
-- **App Manager**: Manages application credentials and settings
-- **Cache**: Improves performance by caching frequently accessed data
-- **Queue**: Processes background tasks like webhook delivery
-- **Rate Limiter**: Protects against abuse and ensures fair usage
-- **Metrics**: Provides observability via Prometheus-compatible endpoints
+## Why Choose Sockudo?
 
-## Use Cases
+### Performance First
+- **Native Performance**: Rust's zero-cost abstractions deliver optimal performance
+- **Memory Safety**: No garbage collection pauses or memory leaks
+- **Concurrent by Design**: Built from the ground up for high-concurrency scenarios
+- **Proven Benchmarks**: Measurably faster than popular alternatives
 
-Sockudo is perfect for building:
+### Production Ready
+- **Battle Tested**: Comprehensive test suite and production deployment experience
+- **Horizontal Scaling**: Built-in support for multiple instances with shared state
+- **Monitoring**: Rich metrics and observability out of the box
+- **Security**: Rate limiting, SSL/TLS, and authentication support
 
-### Real-Time Applications
-- **Live Chat Systems**: Multi-user chat rooms with presence indicators
-- **Collaborative Tools**: Real-time document editing, whiteboards
-- **Gaming**: Multiplayer games with real-time state synchronization
-- **Live Updates**: News feeds, social media updates, notification systems
+### Developer Experience
+- **Drop-in Replacement**: Compatible with existing Pusher client libraries
+- **Flexible Configuration**: Environment variables, JSON config, or hybrid approaches
+- **Clear Documentation**: Comprehensive guides for all features and use cases
+- **Active Development**: Regular updates and community support
 
-### Business Applications
-- **Dashboard Updates**: Real-time analytics and monitoring dashboards
-- **Order Tracking**: Live order status updates for e-commerce
-- **Customer Support**: Real-time customer service chat
-- **Financial Data**: Live stock prices, trading platforms
+## Getting Started
 
-### IoT and Monitoring
-- **Device Monitoring**: Real-time sensor data and device status
-- **Alert Systems**: Instant notifications for critical events
-- **Live Metrics**: System performance and health monitoring
+1. **[Quick Start](./getting-started.md)**: Get Sockudo running in minutes
+2. **[Configuration](./configuration.md)**: Configure for your environment
+3. **[Performance Benchmarks](./performance-benchmarks.md)**: Understand performance characteristics
+4. **[Deployment](./deployment.md)**: Deploy to production
 
-## Channel Types
+## Support and Community
 
-Sockudo supports three types of channels, each designed for different use cases:
+- **Documentation**: This comprehensive guide covers all features
+- **GitHub Issues**: Report bugs and request features
+- **Performance**: See our [benchmark results](./performance-benchmarks.md) for performance insights
+- **Examples**: Real-world configuration examples throughout the documentation
 
-### Public Channels
-- **No authentication required**
-- **Open to all clients**
-- **Perfect for**: Public announcements, news feeds, general updates
+---
 
-```javascript
-const channel = pusher.subscribe('news-updates');
-channel.bind('breaking-news', function(data) {
-  console.log('Breaking news:', data);
-});
-```
-
-### Private Channels
-- **Require authentication**
-- **Secure user-specific data**
-- **Perfect for**: User notifications, private messages, secure updates
-
-```javascript
-const channel = pusher.subscribe('private-user-123');
-channel.bind('new-message', function(data) {
-  console.log('Private message:', data);
-});
-```
-
-### Presence Channels
-- **Require authentication**
-- **Track who's online**
-- **Perfect for**: Chat rooms, collaborative editing, multiplayer games
-
-```javascript
-const channel = pusher.subscribe('presence-chat-room');
-channel.bind('pusher:member_added', function(member) {
-  console.log('User joined:', member.id, member.info);
-});
-```
-
-## Getting Started Path
-
-If you're new to Sockudo, we recommend following this learning path:
-
-### 1. Quick Start (30 minutes)
-1. **[Install and run Sockudo](./getting-started.md)** with default settings
-2. **Test basic connectivity** with a simple WebSocket client
-3. **Send your first event** via the HTTP API
-
-### 2. Basic Configuration (1 hour)
-1. **[Configure your first application](./configuration/app-manager.md)** with custom credentials
-2. **[Set up channels](./channels.md)** and understand the different types
-3. **[Enable basic monitoring](./monitoring.md)** to see what's happening
-
-### 3. Production Preparation (2-4 hours)
-1. **[Configure SSL/TLS](./ssl-configuration.md)** for secure connections
-2. **[Set up webhooks](./webhooks.md)** to react to events
-3. **[Plan your scaling strategy](./scaling.md)** with appropriate adapters
-
-### 4. Advanced Topics (As needed)
-1. **[Deploy to production](./deployment.md)** with Docker/Kubernetes
-2. **[Set up comprehensive monitoring](./monitoring.md)** with Prometheus/Grafana
-3. **[Implement advanced features](./configuration.md)** like rate limiting and caching
-
-## Configuration Overview
-
-Sockudo's configuration is highly flexible and supports both JSON files and environment variables:
-
-```json
-{
-  "debug": false,
-  "host": "0.0.0.0",
-  "port": 6001,
-  "adapter": {
-    "driver": "redis"
-  },
-  "app_manager": {
-    "driver": "mysql"
-  },
-  "cache": {
-    "driver": "redis"
-  },
-  "metrics": {
-    "enabled": true,
-    "port": 9601
-  }
-}
-```
-
-Or using environment variables:
-```bash
-HOST=0.0.0.0
-PORT=6001
-ADAPTER_DRIVER=redis
-APP_MANAGER_DRIVER=mysql
-CACHE_DRIVER=redis
-METRICS_ENABLED=true
-```
-
-## Client Library Compatibility
-
-Sockudo works with standard Pusher client libraries:
-
-### JavaScript (Browser)
-```javascript
-import Pusher from 'pusher-js';
-
-const pusher = new Pusher('your-app-key', {
-  wsHost: 'your-sockudo-server.com',
-  wsPort: 6001,
-  forceTLS: true
-});
-```
-
-### Laravel Echo
-```javascript
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
-
-window.Echo = new Echo({
-  broadcaster: 'pusher',
-  key: 'your-app-key',
-  wsHost: 'your-sockudo-server.com',
-  wsPort: 6001,
-  forceTLS: true
-});
-```
-
-### PHP
-```php
-use Pusher\Pusher;
-
-$pusher = new Pusher(
-  'your-app-key',
-  'your-app-secret',
-  'your-app-id',
-  [
-    'host' => 'your-sockudo-server.com',
-    'port' => 6001,
-    'scheme' => 'https'
-  ]
-);
-```
-
-## Community and Support
-
-### Documentation
-- **[Complete Configuration Reference](./configuration.md)**: Detailed configuration options
-- **[Troubleshooting Guide](./troubleshooting.md)**: Solutions for common issues
-- **[Deployment Guide](./deployment.md)**: Production deployment strategies
-
-### Getting Help
-- **[GitHub Issues](https://github.com/RustNSparks/sockudo/issues)**: Report bugs or request features
-- **[GitHub Repository](https://github.com/RustNSparks/sockudo)**: Source code and documentation
-
-### Community
-- Check the project's GitHub repository for the latest updates and community discussions
-- Review the main README.md file in the repository root for additional information
-- Look for examples and sample configurations in the project repository
-
-## What's Next?
-
-Ready to get started? Here are your next steps:
-
-1. **Begin with [Getting Started](./getting-started.md)** to install and run Sockudo
-2. **Explore [Channels](./channels.md)** to understand how real-time communication works
-3. **Dive into [Configuration](./configuration.md)** to customize Sockudo for your needs
-4. **Set up [Monitoring](./monitoring.md)** to keep track of your server's performance
-5. **Plan for [Production Deployment](./deployment.md)** when you're ready to go live
-
-Whether you're building a simple chat application or a complex real-time system, Sockudo provides the performance, reliability, and flexibility you need to succeed.
-
-Welcome to the world of high-performance real-time communication with Sockudo! 🚀
+Ready to build fast, reliable real-time applications? Start with our [Getting Started Guide](./getting-started.md) or explore the [Performance Benchmarks](./performance-benchmarks.md) to see what Sockudo can deliver for your use case.
