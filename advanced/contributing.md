@@ -84,6 +84,6 @@ We aim to create a welcoming and inclusive environment for all contributors.
 
 ## Licensing
 
-By contributing to Sockudo, you agree that your contributions will be licensed under the project's license (AGPL 3.0, as per the `README.md`).
+By contributing to Sockudo, you agree that your contributions will be licensed under the project's license (MIT, as per the `README.md`).
 
 We look forward to your contributions!

@@ -160,7 +160,7 @@ export default defineConfig({
     },
 
     footer: {
-      message: "Released under the AGPL-3.0 License.",
+      message: "Released under the MIT License.",
       copyright: `Copyright © 2025-${new Date().getFullYear()} RustNSparks & Contributors`,
     },
 
