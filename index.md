@@ -45,8 +45,8 @@ Sockudo is a robust, memory-efficient WebSockets server written in Rust. It's fu
 Our goal is to provide a modern, scalable, and easy-to-use WebSocket solution that developers can rely on for their real-time communication needs.
 
 <div style="margin-top: 2rem; text-align: center;">
-  <a href="/guide/getting-started" class="VPButton brand" style="margin-right: 0.5rem;">Dive into the Guide &rarr;</a>
-  <a href="/concepts/architecture" class="VPButton alt">Learn Core Concepts</a>
+  <a href="/guide/getting-started.md" class="VPButton brand" style="margin-right: 0.5rem;">Dive into the Guide &rarr;</a>
+  <a href="/concepts/architecture.md" class="VPButton alt">Learn Core Concepts</a>
 </div>
 
 ## Why Choose Sockudo?
@@ -57,4 +57,4 @@ Our goal is to provide a modern, scalable, and easy-to-use WebSocket solution th
 * **Modern Stack**: Built with Rust, a language known for its safety, speed, and concurrency features.
 * **Open Source**: Sockudo is open source and community-driven. We welcome contributions and feedback!
 
-Ready to give it a try? Check out the [**Getting Started**](/guide/getting-started) guide.
+Ready to give it a try? Check out the [**Getting Started**](/guide/getting-started.md) guide.
