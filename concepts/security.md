@@ -77,7 +77,24 @@ Sockudo provides rate limiting capabilities to protect against abuse and denial-
     * *Check if Sockudo's webhook implementation includes these headers and signature generation. If so, document how users can verify them.*
 * **Idempotency**: Design your webhook handlers to be idempotent, as network issues might cause webhooks to be delivered more than once in some systems.
 
-## 7. Client-Sent Events
+## 7. Origin Validation
+
+Sockudo provides app-level origin validation as an additional security layer for WebSocket connections. This feature complements CORS configuration by allowing you to restrict which domains can establish WebSocket connections to specific applications.
+
+* **How It Works**: When configured, Sockudo validates the `Origin` header of incoming WebSocket connections against a list of allowed patterns before fully establishing the connection.
+* **CORS-Like Behavior**: Supports protocol-agnostic patterns (`example.com` matches both HTTP and HTTPS), protocol-specific patterns (`https://example.com` only matches HTTPS), and wildcard patterns (`*.example.com` for subdomains).
+* **Per-App Configuration**: Each application can have its own set of allowed origins, providing fine-grained control over which domains can connect.
+* **Error Handling**: Rejected connections receive a Pusher protocol error (`code: 4009, message: "Origin not allowed"`) before disconnection.
+
+**Security Considerations**:
+* Origin validation is browser-only protection. Non-browser clients can spoof the Origin header.
+* This feature provides defense-in-depth but should not be the only security measure.
+* If not configured or empty, all origins are allowed (backward compatible).
+* Missing Origin headers are rejected when origin validation is configured.
+
+For detailed configuration instructions, see [Origin Validation Configuration](../guide/configuration/origin-validation.md).
+
+## 8. Client-Sent Events
 
 * The `enable_client_messages` option (per app) controls whether clients can directly publish events to channels they are subscribed to.
 * **Security Considerations**:
@@ -87,7 +104,7 @@ Sockudo provides rate limiting capabilities to protect against abuse and denial-
     * Client events can only be triggered on private and presence channels after successful authentication for that channel. They cannot be triggered on public channels.
     * There's also a `max_client_events_per_second` limit per app.
 
-## 8. General Server Security
+## 9. General Server Security
 
 Refer to the [Deployment Guide](../guide/deployment.md#security-best-practices) for broader server security practices, including:
 * Running as a non-root user.

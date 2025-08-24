@@ -95,7 +95,7 @@ Configures how Sockudo communicates and scales across multiple instances (e.g., 
 
 ### App Manager Configuration
 
-Manages your applications (credentials, settings) using backends like Memory, MySQL, PostgreSQL, or DynamoDB.
+Manages your applications (credentials, settings) using backends like Memory, MySQL, PostgreSQL, or DynamoDB. Supports per-app security settings including origin validation for WebSocket connections.
 
 ```json
 {
@@ -122,7 +122,12 @@ Manages your applications (credentials, settings) using backends like Memory, My
           "max_event_batch_size": null,
           "enable_user_authentication": null,
           "webhooks": null,
-          "enable_watchlist_events": null
+          "enable_watchlist_events": null,
+          "allowed_origins": [
+            "https://app.example.com",
+            "*.staging.example.com",
+            "localhost:3000"
+          ]
         }
       ]
     },
@@ -452,6 +457,7 @@ SOCKUDO_DEFAULT_APP_ID=demo-app
 SOCKUDO_DEFAULT_APP_KEY=demo-key
 SOCKUDO_DEFAULT_APP_SECRET=demo-secret
 SOCKUDO_ENABLE_CLIENT_MESSAGES=true
+SOCKUDO_DEFAULT_APP_ALLOWED_ORIGINS=https://app.example.com,*.example.com,localhost:3000
 ```
 
 ### AWS Configuration

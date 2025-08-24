@@ -89,6 +89,10 @@ Each object in the array represents an application and has the following fields:
 * **`enable_user_authentication`** (boolean, optional): Whether user authentication is enabled for this app. Default: `null` (use global setting).
 * **`enable_watchlist_events`** (boolean, optional): Whether watchlist events are enabled for this app. Default: `null` (disabled).
 
+#### Security Settings
+
+* **`allowed_origins`** (array of strings, optional): List of allowed origin patterns for WebSocket connections. Provides app-level origin validation as an additional security layer. Supports CORS-like pattern matching including protocol-agnostic (`example.com`), protocol-specific (`https://example.com`), and wildcard patterns (`*.example.com`). If not configured or empty, all origins are allowed (backward compatible). See [Origin Validation Configuration](./origin-validation.md) for detailed configuration examples. Default: `null`.
+
 #### Webhooks
 
 * **`webhooks`** (array of `Webhook` objects, optional): Configuration for webhooks specific to this app. See [Webhooks Configuration](./webhooks.md) for the `Webhook` object structure. Default: `null`.
@@ -120,6 +124,11 @@ Each object in the array represents an application and has the following fields:
           "max_event_batch_size": 10,
           "enable_user_authentication": true,
           "enable_watchlist_events": false,
+          "allowed_origins": [
+            "https://myapp.com",
+            "https://admin.myapp.com",
+            "localhost:3000"
+          ],
           "webhooks": [
             {
               "url": "https://myapplication.com/webhooks/sockudo",
