@@ -284,15 +284,7 @@ socket.onmessage = function(event) {
 3. **Port Requirements**: Ensure ports match exactly when specified in the origin pattern
 4. **Wildcard Patterns**: Remember that `*.example.com` doesn't match the root domain `example.com`
 
-### Migration Guide
-
-#### From No Origin Validation
-
-1. Start with logging mode - configure allowed origins but monitor rejected connections
-2. Gradually add all legitimate origins to the configuration
-3. Enable strict validation once all origins are identified
-
-#### Backward Compatibility
+### Backward Compatibility
 
 - Apps without `allowed_origins` configured continue to work as before
 - No changes required for existing deployments
