@@ -55,6 +55,7 @@ export default defineConfig({
             { text: "Rate Limiter", link: "/guide/configuration/rate-limiter" },
             { text: "SSL/TLS", link: "/guide/configuration/ssl" },
             // { text: "Cluster", link: "/guide/configuration/cluster" },
+            { text: "Origin Validation", link: "/guide/configuration/origin-validation" },
             { text: "Webhooks", link: "/guide/configuration/webhooks" },
             {
               text: "Other Options",
