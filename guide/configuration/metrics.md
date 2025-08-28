@@ -104,53 +104,65 @@ PROMETHEUS_METRICS_PREFIX="my_company_sockudo_"
 Sockudo exposes a comprehensive set of metrics for monitoring various aspects of the server's performance:
 
 ### Connection Metrics
-- **`sockudo_active_connections`**: Current number of active WebSocket connections
-- **`sockudo_total_connections`**: Total number of WebSocket connections established
+- **`sockudo_connected`**: Current number of active WebSocket connections
+- **`sockudo_new_connections_total`**: Total number of WebSocket connections established
+- **`sockudo_new_disconnections_total`**: Total number of WebSocket disconnections
 - **`sockudo_connection_errors_total`**: Total number of connection errors
-- **`sockudo_connections_per_app`**: Active connections per application
 
 ### Message Metrics
-- **`sockudo_messages_sent_total`**: Total number of messages sent by the server
-- **`sockudo_messages_received_total`**: Total number of messages received from clients
-- **`sockudo_client_events_total`**: Total number of client events processed
-- **`sockudo_broadcast_messages_total`**: Total number of messages broadcast to channels
+- **`sockudo_ws_messages_sent_total`**: Total number of messages sent by the server
+- **`sockudo_ws_messages_received_total`**: Total number of messages received from clients
+- **`sockudo_socket_transmitted_bytes`**: Total bytes transmitted via WebSocket connections
+- **`sockudo_socket_received_bytes`**: Total bytes received via WebSocket connections
+- **`sockudo_client_events_total`** (Planned): Total number of client events processed
+- **`sockudo_broadcast_messages_total`** (Planned): Total number of messages broadcast to channels
 
 ### HTTP API Metrics
-- **`sockudo_http_requests_total`**: Total number of HTTP API requests
-- **`sockudo_http_request_duration_seconds`**: HTTP request duration histogram
-- **`sockudo_http_response_size_bytes`**: HTTP response size histogram
+- **`sockudo_http_calls_received_total`**: Total number of HTTP API requests
+- **`sockudo_http_received_bytes`**: Total bytes received by HTTP API
+- **`sockudo_http_transmitted_bytes`**: Total bytes sent by HTTP API
+- **`sockudo_http_request_duration_seconds`** (Planned): HTTP request duration histogram
+- **`sockudo_http_response_size_bytes`** (Planned): HTTP response size histogram
 
 ### Channel Metrics
 - **`sockudo_active_channels`**: Current number of active channels
 - **`sockudo_channel_subscriptions_total`**: Total number of channel subscriptions
 - **`sockudo_channel_unsubscriptions_total`**: Total number of channel unsubscriptions
-- **`sockudo_presence_members`**: Current number of members in presence channels
+- **`sockudo_presence_members`** (Planned): Current number of members in presence channels
 
 ### Rate Limiting Metrics
 - **`sockudo_rate_limit_triggered_total`**: Number of times rate limits were triggered
 - **`sockudo_rate_limit_checks_total`**: Total number of rate limit checks performed
 
-### Queue Metrics (if queue is enabled)
-- **`sockudo_queue_jobs_processed_total`**: Total number of queue jobs processed
-- **`sockudo_queue_jobs_failed_total`**: Total number of failed queue jobs
-- **`sockudo_queue_active_jobs`**: Current number of jobs in the queue
-- **`sockudo_queue_job_duration_seconds`**: Queue job processing time histogram
+### Horizontal Adapter Metrics
+- **`sockudo_horizontal_adapter_resolve_time`**: Resolve time for requests to other nodes (histogram)
+- **`sockudo_horizontal_adapter_resolved_promises`**: Promises fulfilled by other nodes
+- **`sockudo_horizontal_adapter_uncomplete_promises`**: Promises not entirely fulfilled by other nodes
+- **`sockudo_horizontal_adapter_sent_requests`**: Total requests sent to other nodes
+- **`sockudo_horizontal_adapter_received_requests`**: Total requests received from other nodes
+- **`sockudo_horizontal_adapter_received_responses`**: Total responses received from other nodes
 
-### Webhook Metrics
-- **`sockudo_webhooks_sent_total`**: Total number of webhooks sent
-- **`sockudo_webhooks_failed_total`**: Total number of failed webhooks
-- **`sockudo_webhook_duration_seconds`**: Webhook request duration histogram
+### Queue Metrics (Planned)
+- **`sockudo_queue_jobs_processed_total`** (Planned): Total number of queue jobs processed
+- **`sockudo_queue_jobs_failed_total`** (Planned): Total number of failed queue jobs
+- **`sockudo_queue_active_jobs`** (Planned): Current number of jobs in the queue
+- **`sockudo_queue_job_duration_seconds`** (Planned): Queue job processing time histogram
 
-### Cache Metrics
-- **`sockudo_cache_hits_total`**: Total number of cache hits
-- **`sockudo_cache_misses_total`**: Total number of cache misses
-- **`sockudo_cache_operations_total`**: Total number of cache operations
-- **`sockudo_cache_memory_usage_bytes`**: Current cache memory usage
+### Webhook Metrics (Planned)
+- **`sockudo_webhooks_sent_total`** (Planned): Total number of webhooks sent
+- **`sockudo_webhooks_failed_total`** (Planned): Total number of failed webhooks
+- **`sockudo_webhook_duration_seconds`** (Planned): Webhook request duration histogram
 
-### Adapter Metrics
-- **`sockudo_adapter_operations_total`**: Total number of adapter operations
-- **`sockudo_adapter_errors_total`**: Total number of adapter errors
-- **`sockudo_adapter_latency_seconds`**: Adapter operation latency histogram
+### Cache Metrics (Planned)
+- **`sockudo_cache_hits_total`** (Planned): Total number of cache hits
+- **`sockudo_cache_misses_total`** (Planned): Total number of cache misses
+- **`sockudo_cache_operations_total`** (Planned): Total number of cache operations
+- **`sockudo_cache_memory_usage_bytes`** (Planned): Current cache memory usage
+
+### Adapter Metrics (Planned)
+- **`sockudo_adapter_operations_total`** (Planned): Total number of adapter operations
+- **`sockudo_adapter_errors_total`** (Planned): Total number of adapter errors
+- **`sockudo_adapter_latency_seconds`** (Planned): Adapter operation latency histogram
 
 ### Broadcast Performance Metrics (v2.6.1+)
 - **`sockudo_broadcast_latency_ms`**: End-to-end latency for broadcast messages in milliseconds
@@ -184,13 +196,13 @@ For example, with default settings: `http://localhost:9601/metrics`
 ### Example Metrics Output
 
 ```
-# HELP sockudo_active_connections Current number of active connections
-# TYPE sockudo_active_connections gauge
-sockudo_active_connections{app_id="demo-app"} 42
+# HELP sockudo_connected Current number of active connections
+# TYPE sockudo_connected gauge
+sockudo_connected{app_id="demo-app",port="6001"} 42
 
-# HELP sockudo_messages_sent_total Total messages sent
-# TYPE sockudo_messages_sent_total counter
-sockudo_messages_sent_total{app_id="demo-app",channel_type="public"} 1234
+# HELP sockudo_ws_messages_sent_total Total messages sent
+# TYPE sockudo_ws_messages_sent_total counter
+sockudo_ws_messages_sent_total{app_id="demo-app",port="6001"} 1234
 
 # HELP sockudo_http_request_duration_seconds HTTP request duration
 # TYPE sockudo_http_request_duration_seconds histogram
@@ -370,19 +382,13 @@ services:
 
 ```promql
 # Active connections per app
-sockudo_active_connections
+sockudo_connected
 
 # Message rate (5-minute average)
-rate(sockudo_messages_sent_total[5m])
+rate(sockudo_ws_messages_sent_total[5m])
 
-# 95th percentile response time
-histogram_quantile(0.95, rate(sockudo_http_request_duration_seconds_bucket[5m]))
-
-# Error rate percentage
-rate(sockudo_http_requests_total{status=~"5.."}[5m]) / rate(sockudo_http_requests_total[5m]) * 100
-
-# Cache hit rate
-rate(sockudo_cache_hits_total[5m]) / (rate(sockudo_cache_hits_total[5m]) + rate(sockudo_cache_misses_total[5m])) * 100
+# HTTP API calls rate
+rate(sockudo_http_calls_received_total[5m])
 
 # Broadcast latency percentiles by recipient count bucket (v2.6.1+)
 histogram_quantile(0.50, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
@@ -404,17 +410,9 @@ rate(sockudo_broadcast_latency_ms_bucket[5m])
 groups:
   - name: sockudo_alerts
     rules:
-      - alert: SockudoHighErrorRate
-        expr: rate(sockudo_http_requests_total{status=~"5.."}[5m]) / rate(sockudo_http_requests_total[5m]) > 0.1
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High error rate on Sockudo instance {{ $labels.instance }}"
-          description: "Error rate is {{ $value | humanizePercentage }}"
 
       - alert: SockudoHighConnections
-        expr: sockudo_active_connections > 1000
+        expr: sockudo_connected > 1000
         for: 5m
         labels:
           severity: warning
@@ -431,23 +429,7 @@ groups:
           summary: "Sockudo instance down"
           description: "Instance {{ $labels.instance }} is down"
 
-      - alert: SockudoHighLatency
-        expr: histogram_quantile(0.95, rate(sockudo_http_request_duration_seconds_bucket[5m])) > 1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High latency on Sockudo"
-          description: "95th percentile latency is {{ $value }}s"
 
-      - alert: SockudoQueueBacklog
-        expr: sockudo_queue_active_jobs > 1000
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High queue backlog"
-          description: "Queue has {{ $value }} pending jobs"
 
       # Broadcast Performance Alert (v2.6.1+)
       - alert: SockudoHighBroadcastLatency
