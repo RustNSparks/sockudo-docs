@@ -121,6 +121,14 @@ Sockudo exposes comprehensive metrics across different categories:
 - **`sockudo_adapter_latency_seconds`**: Adapter operation latency
 - **`sockudo_adapter_message_size_bytes`**: Size of messages through adapter
 
+### Broadcast Performance Metrics (v2.6.1+)
+
+#### Broadcast Latency
+- **`sockudo_broadcast_latency_ms`**: End-to-end latency for broadcast messages in milliseconds
+  - Histogram with buckets: 0.5, 1.0, 2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0, 5000.0 ms
+  - Labels include `channel_type` and `recipient_count_bucket` (xs: 1-10, sm: 11-100, md: 101-1000, lg: 1001-10000, xl: 10000+)
+  - Tracks complete broadcast delivery time from initiation to all recipients
+
 ## Setting up Prometheus
 
 ### Prometheus Configuration
@@ -311,6 +319,25 @@ rate(sockudo_cache_hits_total[5m]) / (rate(sockudo_cache_hits_total[5m]) + rate(
 rate(sockudo_webhooks_sent_total[5m]) / (rate(sockudo_webhooks_sent_total[5m]) + rate(sockudo_webhooks_failed_total[5m])) * 100
 ```
 
+#### 6. Broadcast Performance (v2.6.1+)
+```promql
+# Broadcast latency percentiles by recipient count
+histogram_quantile(0.50, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+histogram_quantile(0.99, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+
+# Average broadcast latency by channel type
+rate(sockudo_broadcast_latency_ms_sum[5m]) / rate(sockudo_broadcast_latency_ms_count[5m]) by (channel_type)
+
+# Broadcast latency distribution heatmap
+rate(sockudo_broadcast_latency_ms_bucket[5m])
+
+# Broadcast performance by size category
+histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket{recipient_count_bucket="xs"}[5m]))
+histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket{recipient_count_bucket="md"}[5m]))
+histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket{recipient_count_bucket="xl"}[5m]))
+```
+
 ### Sample Grafana Dashboard JSON
 
 ```json
@@ -357,6 +384,16 @@ rate(sockudo_webhooks_sent_total[5m]) / (rate(sockudo_webhooks_sent_total[5m]) +
           {
             "expr": "histogram_quantile(0.99, rate(sockudo_http_request_duration_seconds_bucket[5m]))",
             "legendFormat": "p99"
+          }
+        ]
+      },
+      {
+        "title": "Broadcast Latency by Size (v2.6.1+)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)",
+            "legendFormat": "{{recipient_count_bucket}} (p95)"
           }
         ]
       }
@@ -460,6 +497,25 @@ groups:
         annotations:
           summary: "Low cache hit rate on {{ $labels.instance }}"
           description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+      # Broadcast Performance Alerts (v2.6.1+)
+      - alert: SockudoHighBroadcastLatency
+        expr: histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket[5m])) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High broadcast latency on {{ $labels.instance }}"
+          description: "95th percentile broadcast latency is {{ $value }}ms for {{ $labels.recipient_count_bucket }} recipient bucket"
+
+      - alert: SockudoVeryHighBroadcastLatency
+        expr: histogram_quantile(0.99, rate(sockudo_broadcast_latency_ms_bucket[5m])) > 500
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical broadcast latency on {{ $labels.instance }}"
+          description: "99th percentile broadcast latency is {{ $value }}ms for {{ $labels.recipient_count_bucket }} recipient bucket"
 ```
 
 ### Alertmanager Configuration

@@ -152,6 +152,27 @@ Sockudo exposes a comprehensive set of metrics for monitoring various aspects of
 - **`sockudo_adapter_errors_total`**: Total number of adapter errors
 - **`sockudo_adapter_latency_seconds`**: Adapter operation latency histogram
 
+### Broadcast Performance Metrics (v2.6.1+)
+- **`sockudo_broadcast_latency_ms`**: End-to-end latency for broadcast messages in milliseconds
+  - **Type**: Histogram
+  - **Description**: Measures the complete time from when a broadcast is initiated until it's delivered to all recipients
+  - **Labels**:
+    - `app_id`: The application identifier
+    - `port`: The server port
+    - `channel_type`: Type of channel (`public`, `private`, `presence`, `encrypted`)
+    - `recipient_count_bucket`: Size category of broadcast recipients
+      - `xs`: 1-10 recipients
+      - `sm`: 11-100 recipients
+      - `md`: 101-1000 recipients
+      - `lg`: 1001-10000 recipients
+      - `xl`: 10000+ recipients
+  - **Histogram Buckets** (in milliseconds): 0.5, 1.0, 2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0, 5000.0
+  - **Use Cases**:
+    - Monitor broadcast performance across different channel sizes
+    - Identify performance degradation for large broadcasts
+    - Track latency distribution patterns
+    - Set up alerts for slow broadcasts
+
 ## Accessing Metrics
 
 When enabled, metrics are available at the following endpoint:
@@ -178,6 +199,16 @@ sockudo_http_request_duration_seconds_bucket{method="POST",endpoint="/events",le
 sockudo_http_request_duration_seconds_bucket{method="POST",endpoint="/events",le="1.0"} 200
 sockudo_http_request_duration_seconds_sum{method="POST",endpoint="/events"} 45.2
 sockudo_http_request_duration_seconds_count{method="POST",endpoint="/events"} 200
+
+# HELP sockudo_broadcast_latency_ms End-to-end latency for broadcast messages in milliseconds
+# TYPE sockudo_broadcast_latency_ms histogram
+sockudo_broadcast_latency_ms_bucket{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md",le="1"} 850
+sockudo_broadcast_latency_ms_bucket{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md",le="2.5"} 920
+sockudo_broadcast_latency_ms_bucket{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md",le="5"} 980
+sockudo_broadcast_latency_ms_bucket{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md",le="10"} 995
+sockudo_broadcast_latency_ms_bucket{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md",le="+Inf"} 1000
+sockudo_broadcast_latency_ms_sum{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md"} 2341.5
+sockudo_broadcast_latency_ms_count{app_id="demo-app",port="6001",channel_type="public",recipient_count_bucket="md"} 1000
 ```
 
 ## Security Considerations
@@ -352,6 +383,17 @@ rate(sockudo_http_requests_total{status=~"5.."}[5m]) / rate(sockudo_http_request
 
 # Cache hit rate
 rate(sockudo_cache_hits_total[5m]) / (rate(sockudo_cache_hits_total[5m]) + rate(sockudo_cache_misses_total[5m])) * 100
+
+# Broadcast latency percentiles by recipient count bucket (v2.6.1+)
+histogram_quantile(0.50, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+histogram_quantile(0.99, rate(sockudo_broadcast_latency_ms_bucket[5m])) by (recipient_count_bucket)
+
+# Average broadcast latency by channel type
+rate(sockudo_broadcast_latency_ms_sum[5m]) / rate(sockudo_broadcast_latency_ms_count[5m]) by (channel_type)
+
+# Broadcast latency heatmap (for Grafana heatmap panel)
+rate(sockudo_broadcast_latency_ms_bucket[5m])
 ```
 
 ## Alerting Rules
@@ -406,6 +448,25 @@ groups:
         annotations:
           summary: "High queue backlog"
           description: "Queue has {{ $value }} pending jobs"
+
+      # Broadcast Performance Alert (v2.6.1+)
+      - alert: SockudoHighBroadcastLatency
+        expr: histogram_quantile(0.95, rate(sockudo_broadcast_latency_ms_bucket[5m])) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High broadcast latency on {{ $labels.instance }}"
+          description: "95th percentile broadcast latency is {{ $value }}ms for {{ $labels.recipient_count_bucket }} recipient bucket"
+
+      - alert: SockudoVeryHighBroadcastLatency
+        expr: histogram_quantile(0.99, rate(sockudo_broadcast_latency_ms_bucket[5m])) > 500
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Very high broadcast latency on {{ $labels.instance }}"
+          description: "99th percentile broadcast latency is {{ $value }}ms for {{ $labels.recipient_count_bucket }} recipient bucket"
 ```
 
 ## Performance Impact
