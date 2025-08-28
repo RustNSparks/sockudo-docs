@@ -1,5 +1,3 @@
-# guide/configuration/cache.md
-
 # Cache Configuration
 
 Sockudo utilizes caching for various purposes, such as storing presence channel member data, app configurations (by the App Manager), and other internal data to improve performance and reduce load on backend systems.

@@ -1,5 +1,3 @@
-# guide/webhooks.md
-
 # Webhooks
 
 Sockudo can send HTTP POST requests (webhooks) to your application server when certain events occur within the WebSocket system. This allows you to react to real-time events, store data, trigger other processes, or audit activity.

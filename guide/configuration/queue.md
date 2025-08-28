@@ -1,5 +1,3 @@
-# guide/configuration/queue.md
-
 # Queue Configuration
 
 Sockudo can utilize a queueing system for background processing tasks, most notably for handling webhook dispatches. This allows Sockudo to send webhooks asynchronously without blocking the main application flow, improving responsiveness and reliability.

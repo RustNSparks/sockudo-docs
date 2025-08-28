@@ -1,5 +1,3 @@
-# guide/monitoring.md
-
 # Monitoring Sockudo
 
 Monitoring your Sockudo server is crucial for understanding its performance, identifying bottlenecks, and ensuring its reliability in a production environment. Sockudo can expose metrics via a Prometheus-compatible endpoint and provides comprehensive observability features.

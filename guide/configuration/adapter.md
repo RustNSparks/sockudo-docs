@@ -1,5 +1,3 @@
-# guide/configuration/adapter.md
-
 # Adapter Configuration
 
 The Adapter in Sockudo is a crucial component responsible for managing WebSocket connections and broadcasting messages between different server instances in a scaled environment. It allows Sockudo to scale horizontally.

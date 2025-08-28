@@ -1,5 +1,3 @@
-# guide/configuration/other-options.md
-
 # Other Configuration Options
 
 This section covers various other configuration areas within Sockudo's `ServerOptions` that control aspects like channel and event limits, database connections, presence channel behavior, HTTP API settings, and database pooling.

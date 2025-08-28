@@ -1,5 +1,3 @@
-# guide/troubleshooting.md
-
 # Troubleshooting Guide
 
 This guide provides solutions and diagnostic steps for common issues you might encounter while setting up or running Sockudo.

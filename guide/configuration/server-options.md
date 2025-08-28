@@ -1,5 +1,3 @@
-# guide/configuration/server-options.md
-
 # Server Options Configuration
 
 This section details general server-level configurations for Sockudo, including core server settings like host, port, debug mode, SSL configuration, and instance management.

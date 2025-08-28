@@ -1,5 +1,3 @@
-# guide/configuration/rate-limiter.md
-
 # Rate Limiter Configuration
 
 Sockudo includes a rate limiting feature to protect your server from abuse and ensure fair usage. It can limit the number of requests from a single IP address to the HTTP API and the number of WebSocket connection attempts.

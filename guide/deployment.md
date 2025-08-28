@@ -1,5 +1,3 @@
-# guide/deployment.md
-
 # Deployment Guide
 
 This guide provides recommendations and strategies for deploying your Sockudo server to a production environment, covering everything from building and containerization to scaling and security best practices.

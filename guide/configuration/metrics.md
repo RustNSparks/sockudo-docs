@@ -1,5 +1,3 @@
-# guide/configuration/metrics.md
-
 # Metrics Configuration
 
 Sockudo can expose performance metrics that can be scraped by monitoring systems like Prometheus. This allows you to observe the server's behavior, track performance, and set up alerts.

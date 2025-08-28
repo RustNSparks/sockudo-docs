@@ -1,5 +1,3 @@
-# guide/configuration/ssl.md
-
 # SSL/TLS Configuration
 
 To secure WebSocket connections using `wss://` (WebSocket Secure), you need to configure Sockudo with an SSL/TLS certificate. This encrypts the data transmitted between clients and your Sockudo server, protecting it from eavesdropping and tampering.
