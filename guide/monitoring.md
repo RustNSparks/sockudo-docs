@@ -32,111 +32,20 @@ PROMETHEUS_METRICS_PREFIX="sockudo_"
 
 By default, metrics will be available at `http://<metrics_host>:<metrics_port>/metrics` (e.g., `http://localhost:9601/metrics`).
 
-## Key Metrics to Monitor
+## Available Metrics
 
-Sockudo exposes comprehensive metrics across different categories:
+Sockudo exposes comprehensive metrics for monitoring server performance and health. For a complete list of available metrics and their descriptions, see the [Metrics Configuration Guide](./configuration/metrics.md#available-metrics).
 
-### Connection Metrics
+### Key Monitoring Categories
 
-#### Active Connections
-- **`sockudo_connected`**: Current number of active WebSocket connections
-- **`sockudo_new_connections_total`**: Total number of connections established since startup
-- **`sockudo_new_disconnections_total`**: Total connections closed
-- **`sockudo_connection_errors_total`**: Connection errors (timeouts, protocol errors)
-
-### Message Throughput
-
-#### Message Flows
-- **`sockudo_ws_messages_sent_total`**: Total messages sent by the server to clients
-- **`sockudo_ws_messages_received_total`**: Total messages received from clients
-- **`sockudo_socket_transmitted_bytes`**: Total bytes transmitted via WebSocket connections
-- **`sockudo_socket_received_bytes`**: Total bytes received via WebSocket connections
-- **`sockudo_broadcast_messages_total`** (Planned): Messages broadcast to multiple subscribers
-- **`sockudo_client_events_total`** (Planned): Client-triggered events processed
-
-#### Message Processing (Planned)
-- **`sockudo_message_processing_duration_seconds`** (Planned): Histogram of message processing times
-- **`sockudo_message_size_bytes`** (Planned): Histogram of message sizes
-
-### HTTP API Performance
-
-#### Request Metrics
-- **`sockudo_http_calls_received_total`**: Total HTTP API requests
-- **`sockudo_http_received_bytes`**: Total bytes received by HTTP API
-- **`sockudo_http_transmitted_bytes`**: Total bytes sent by HTTP API
-- **`sockudo_http_request_duration_seconds`** (Planned): Request latency histogram
-- **`sockudo_http_response_size_bytes`** (Planned): Response size histogram
-
-#### API Errors (Planned)
-- **`sockudo_http_errors_total`** (Planned): HTTP errors by status code
-- **`sockudo_api_authentication_failures_total`** (Planned): Failed authentication attempts
-
-### Channel Statistics
-
-#### Channel Activity
-- **`sockudo_active_channels`**: Current number of channels with subscribers
-- **`sockudo_channel_subscriptions_total`**: Total channel subscriptions
-- **`sockudo_channel_unsubscriptions_total`**: Total channel unsubscriptions
-
-#### Presence Channels (Planned)
-- **`sockudo_presence_members`** (Planned): Current members in presence channels
-- **`sockudo_presence_events_total`** (Planned): Member join/leave events
-
-### Rate Limiting
-
-#### Rate Limit Events
-- **`sockudo_rate_limit_triggered_total`**: Rate limits triggered by type (API, WebSocket)
-- **`sockudo_rate_limit_checks_total`**: Total rate limit checks with results
-
-### Horizontal Adapter Metrics
-
-#### Horizontal Scaling Performance
-- **`sockudo_horizontal_adapter_resolve_time`**: Resolve time for requests to other nodes (histogram)
-- **`sockudo_horizontal_adapter_resolved_promises`**: Promises fulfilled by other nodes
-- **`sockudo_horizontal_adapter_uncomplete_promises`**: Promises not entirely fulfilled by other nodes
-- **`sockudo_horizontal_adapter_sent_requests`**: Total requests sent to other nodes
-- **`sockudo_horizontal_adapter_received_requests`**: Total requests received from other nodes
-- **`sockudo_horizontal_adapter_received_responses`**: Total responses received from other nodes
-
-### Queue Performance (Planned)
-
-#### Job Processing (Planned)
-- **`sockudo_queue_jobs_processed_total`** (Planned): Successfully processed queue jobs
-- **`sockudo_queue_jobs_failed_total`** (Planned): Failed queue jobs
-- **`sockudo_queue_active_jobs`** (Planned): Current jobs waiting in queue
-- **`sockudo_queue_job_duration_seconds`** (Planned): Job processing time histogram
-
-### Webhook Metrics (Planned)
-
-#### Webhook Delivery (Planned)
-- **`sockudo_webhooks_sent_total`** (Planned): Total webhooks sent
-- **`sockudo_webhooks_failed_total`** (Planned): Failed webhook deliveries
-- **`sockudo_webhook_duration_seconds`** (Planned): Webhook request duration
-- **`sockudo_webhook_retries_total`** (Planned): Webhook retry attempts
-
-### Cache Performance (Planned)
-
-#### Cache Operations (Planned)
-- **`sockudo_cache_hits_total`** (Planned): Cache hits
-- **`sockudo_cache_misses_total`** (Planned): Cache misses
-- **`sockudo_cache_operations_total`** (Planned): Total cache operations
-- **`sockudo_cache_memory_usage_bytes`** (Planned): Current cache memory usage
-
-### Adapter Metrics (Planned)
-
-#### Adapter Performance (Planned)
-- **`sockudo_adapter_operations_total`** (Planned): Adapter operations (publish, subscribe)
-- **`sockudo_adapter_errors_total`** (Planned): Adapter errors
-- **`sockudo_adapter_latency_seconds`** (Planned): Adapter operation latency
-- **`sockudo_adapter_message_size_bytes`** (Planned): Size of messages through adapter
-
-### Broadcast Performance Metrics (v2.6.1+)
-
-#### Broadcast Latency
-- **`sockudo_broadcast_latency_ms`**: End-to-end latency for broadcast messages in milliseconds
-  - Histogram with buckets: 0.5, 1.0, 2.5, 5.0, 10.0, 25.0, 50.0, 100.0, 250.0, 500.0, 1000.0, 2500.0, 5000.0 ms
-  - Labels include `channel_type` and `recipient_count_bucket` (xs: 1-10, sm: 11-100, md: 101-1000, lg: 1001-10000, xl: 10000+)
-  - Tracks complete broadcast delivery time from initiation to all recipients
+The available metrics cover the following areas:
+- **Connection Management**: Track active connections, connection/disconnection rates, and connection errors
+- **Message Throughput**: Monitor WebSocket messages and bytes transmitted/received
+- **HTTP API Performance**: Track API calls and data transfer
+- **Channel Activity**: Monitor channel subscriptions and active channels
+- **Rate Limiting**: Track rate limit checks and triggers
+- **Horizontal Scaling**: Monitor adapter performance for distributed deployments (Redis, NATS)
+- **Broadcast Performance**: End-to-end latency tracking for message broadcasts (v2.6.1+)
 
 ## Setting up Prometheus
 

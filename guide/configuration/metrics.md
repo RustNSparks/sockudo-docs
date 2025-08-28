@@ -101,7 +101,7 @@ PROMETHEUS_METRICS_PREFIX="my_company_sockudo_"
 
 ## Available Metrics
 
-Sockudo exposes a comprehensive set of metrics for monitoring various aspects of the server's performance:
+Sockudo exposes metrics for monitoring various aspects of the server's performance. These are currently implemented and available for use:
 
 ### Connection Metrics
 - **`sockudo_connected`**: Current number of active WebSocket connections
@@ -114,21 +114,16 @@ Sockudo exposes a comprehensive set of metrics for monitoring various aspects of
 - **`sockudo_ws_messages_received_total`**: Total number of messages received from clients
 - **`sockudo_socket_transmitted_bytes`**: Total bytes transmitted via WebSocket connections
 - **`sockudo_socket_received_bytes`**: Total bytes received via WebSocket connections
-- **`sockudo_client_events_total`** (Planned): Total number of client events processed
-- **`sockudo_broadcast_messages_total`** (Planned): Total number of messages broadcast to channels
 
 ### HTTP API Metrics
 - **`sockudo_http_calls_received_total`**: Total number of HTTP API requests
 - **`sockudo_http_received_bytes`**: Total bytes received by HTTP API
 - **`sockudo_http_transmitted_bytes`**: Total bytes sent by HTTP API
-- **`sockudo_http_request_duration_seconds`** (Planned): HTTP request duration histogram
-- **`sockudo_http_response_size_bytes`** (Planned): HTTP response size histogram
 
 ### Channel Metrics
 - **`sockudo_active_channels`**: Current number of active channels
 - **`sockudo_channel_subscriptions_total`**: Total number of channel subscriptions
 - **`sockudo_channel_unsubscriptions_total`**: Total number of channel unsubscriptions
-- **`sockudo_presence_members`** (Planned): Current number of members in presence channels
 
 ### Rate Limiting Metrics
 - **`sockudo_rate_limit_triggered_total`**: Number of times rate limits were triggered
@@ -141,28 +136,6 @@ Sockudo exposes a comprehensive set of metrics for monitoring various aspects of
 - **`sockudo_horizontal_adapter_sent_requests`**: Total requests sent to other nodes
 - **`sockudo_horizontal_adapter_received_requests`**: Total requests received from other nodes
 - **`sockudo_horizontal_adapter_received_responses`**: Total responses received from other nodes
-
-### Queue Metrics (Planned)
-- **`sockudo_queue_jobs_processed_total`** (Planned): Total number of queue jobs processed
-- **`sockudo_queue_jobs_failed_total`** (Planned): Total number of failed queue jobs
-- **`sockudo_queue_active_jobs`** (Planned): Current number of jobs in the queue
-- **`sockudo_queue_job_duration_seconds`** (Planned): Queue job processing time histogram
-
-### Webhook Metrics (Planned)
-- **`sockudo_webhooks_sent_total`** (Planned): Total number of webhooks sent
-- **`sockudo_webhooks_failed_total`** (Planned): Total number of failed webhooks
-- **`sockudo_webhook_duration_seconds`** (Planned): Webhook request duration histogram
-
-### Cache Metrics (Planned)
-- **`sockudo_cache_hits_total`** (Planned): Total number of cache hits
-- **`sockudo_cache_misses_total`** (Planned): Total number of cache misses
-- **`sockudo_cache_operations_total`** (Planned): Total number of cache operations
-- **`sockudo_cache_memory_usage_bytes`** (Planned): Current cache memory usage
-
-### Adapter Metrics (Planned)
-- **`sockudo_adapter_operations_total`** (Planned): Total number of adapter operations
-- **`sockudo_adapter_errors_total`** (Planned): Total number of adapter errors
-- **`sockudo_adapter_latency_seconds`** (Planned): Adapter operation latency histogram
 
 ### Broadcast Performance Metrics (v2.6.1+)
 - **`sockudo_broadcast_latency_ms`**: End-to-end latency for broadcast messages in milliseconds
@@ -184,6 +157,45 @@ Sockudo exposes a comprehensive set of metrics for monitoring various aspects of
     - Identify performance degradation for large broadcasts
     - Track latency distribution patterns
     - Set up alerts for slow broadcasts
+
+## Planned Metrics
+
+The following metrics are planned for future releases but are not currently implemented. They are listed here to provide visibility into the roadmap and help you plan your monitoring strategy.
+
+> **Note**: These metrics are not available yet. Attempting to query them will result in no data. The examples and alert rules in this documentation focus only on available metrics.
+
+### Message Processing (Planned)
+- **`sockudo_client_events_total`**: Total number of client events processed
+- **`sockudo_broadcast_messages_total`**: Total number of messages broadcast to channels
+
+### HTTP API Performance (Planned)
+- **`sockudo_http_request_duration_seconds`**: HTTP request duration histogram
+- **`sockudo_http_response_size_bytes`**: HTTP response size histogram
+
+### Channel Presence (Planned)
+- **`sockudo_presence_members`**: Current number of members in presence channels
+
+### Queue Metrics (Planned)
+- **`sockudo_queue_jobs_processed_total`**: Total number of queue jobs processed
+- **`sockudo_queue_jobs_failed_total`**: Total number of failed queue jobs
+- **`sockudo_queue_active_jobs`**: Current number of jobs in the queue
+- **`sockudo_queue_job_duration_seconds`**: Queue job processing time histogram
+
+### Webhook Metrics (Planned)
+- **`sockudo_webhooks_sent_total`**: Total number of webhooks sent
+- **`sockudo_webhooks_failed_total`**: Total number of failed webhooks
+- **`sockudo_webhook_duration_seconds`**: Webhook request duration histogram
+
+### Cache Metrics (Planned)
+- **`sockudo_cache_hits_total`**: Total number of cache hits
+- **`sockudo_cache_misses_total`**: Total number of cache misses
+- **`sockudo_cache_operations_total`**: Total number of cache operations
+- **`sockudo_cache_memory_usage_bytes`**: Current cache memory usage
+
+### Adapter Metrics (Planned)
+- **`sockudo_adapter_operations_total`**: Total number of adapter operations
+- **`sockudo_adapter_errors_total`**: Total number of adapter errors
+- **`sockudo_adapter_latency_seconds`**: Adapter operation latency histogram
 
 ## Accessing Metrics
 
