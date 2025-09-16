@@ -1,75 +1,131 @@
 import { defineConfig } from "vitepress";
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Sockudo",
-  description:
-    "A high-performance, Pusher-compatible WebSockets server written in Rust.",
-  base: "/", // Adjust if you're deploying to a subdirectory like username.github.io/sockudo-docs/
+  title: "Sockudo Documentation",
+  titleTemplate: ":title | Sockudo - High-Performance WebSocket Server",
+  description: "Complete documentation for Sockudo, a high-performance Rust WebSocket server with Pusher compatibility. Build real-time applications with sub-5ms latency.",
+  
+  // Enhanced meta tags
   head: [
-    ["link", { rel: "icon", href: "/favicon.ico" }], // Adjust path if base is different
-    // You can add other meta tags here
+     ['script', {}, `
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-TKXKMXDD');
+    `],
+    // Existing favicon
+    ["link", { rel: "icon", href: "/favicon.ico" }],
+    
+    // SEO meta tags
+    ["meta", { name: "keywords", content: "websocket server, pusher alternative, real-time messaging, rust websocket, high performance websocket, laravel echo, pusher compatible" }],
+    ["meta", { name: "author", content: "RustNSparks" }],
+    ["meta", { name: "robots", content: "index, follow" }],
+    
+    // Open Graph
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "Sockudo Documentation" }],
+    ["meta", { property: "og:title", content: "Sockudo - High-Performance WebSocket Server Documentation" }],
+    ["meta", { property: "og:description", content: "Complete documentation for Sockudo, a high-performance Rust WebSocket server with Pusher compatibility." }],
+    ["meta", { property: "og:url", content: "https://sockudo.app" }],
+    
+    // Twitter Card
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:site", content: "@sockudorealtime" }],
+    ["meta", { name: "twitter:title", content: "Sockudo WebSocket Server Documentation" }],
+    ["meta", { name: "twitter:description", content: "High-performance Rust WebSocket server with Pusher compatibility. 6.5x faster than alternatives." }],
+    
+    // Structured data for software
+    ["script", { type: "application/ld+json" }, JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Sockudo",
+      "description": "High-performance WebSocket server built in Rust with Pusher protocol compatibility",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Linux, macOS, Windows",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "RustNSparks",
+        "url": "https://github.com/RustNSparks"
+      },
+      "url": "https://sockudo.app",
+      "sameAs": [
+        "https://github.com/RustNSparks/sockudo",
+        "https://twitter.com/sockudorealtime"
+      ]
+    })]
   ],
 
-  themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
-    logo: "/logo.svg", // Path relative to the 'public' directory in `docs`
+  // SEO enhancements
+  base: "/",
+  lang: "en-US",
+  lastUpdated: true,
+  cleanUrls: true,
+  
+  // Generate sitemap
+  sitemap: {
+    hostname: "https://sockudo.app"
+  },
 
+  themeConfig: {
+    logo: "/logo.svg",
+
+    // Enhanced navigation with SEO-friendly text
     nav: [
       { text: "Home", link: "/" },
-      { text: "Guide", link: "/guide" },
+      { text: "Getting Started", link: "/guide/getting-started" },
+      { text: "Documentation", link: "/guide/" },
       { text: "API Reference", link: "/api/" },
-      { text: "Concepts", link: "/concepts/architecture" },
-      { text: "Integrations", link: "/integrations/index" },
+      { text: "Performance", link: "/guide/performance-benchmarks" },
+      { text: "Integrations", link: "/integrations/" },
       {
-        text: "Links",
+        text: "Resources",
         items: [
-          { text: "GitHub", link: "https://github.com/RustNSparks/sockudo" },
-          // Add other relevant links here, e.g., RustNSparks organization
+          { text: "GitHub Repository", link: "https://github.com/RustNSparks/sockudo" },
+          { text: "Discord Community", link: "https://discord.gg/MRhmYg68RY" },
+          { text: "Twitter Updates", link: "https://x.com/sockudorealtime" },
         ],
       },
     ],
 
+    // Your existing sidebar structure (keeping what works)
     sidebar: {
       "/guide/": [
         {
-          text: "Introduction",
-          link: "/guide/",
+          text: "Getting Started",
           collapsed: false,
-          items: [{ text: "Getting Started", link: "/guide/getting-started" }],
+          items: [
+            { text: "Introduction", link: "/guide/" },
+            { text: "Quick Start Guide", link: "/guide/getting-started" }
+          ],
         },
         {
           text: "Configuration",
           collapsed: false,
           items: [
-            { text: "Overview", link: "/guide/configuration" },
-            {
-              text: "Server Options",
-              link: "/guide/configuration/server-options",
-            },
-            { text: "Adapter", link: "/guide/configuration/adapter" },
+            { text: "Configuration Overview", link: "/guide/configuration" },
+            { text: "Server Options", link: "/guide/configuration/server-options" },
+            { text: "Adapter Setup", link: "/guide/configuration/adapter" },
             { text: "App Manager", link: "/guide/configuration/app-manager" },
-            { text: "Cache", link: "/guide/configuration/cache" },
-            { text: "Queue", link: "/guide/configuration/queue" },
-            { text: "Metrics", link: "/guide/configuration/metrics" },
-            { text: "Rate Limiter", link: "/guide/configuration/rate-limiter" },
-            { text: "SSL/TLS", link: "/guide/configuration/ssl" },
-            // { text: "Cluster", link: "/guide/configuration/cluster" },
-            { text: "Origin Validation", link: "/guide/configuration/origin-validation" },
-            { text: "Webhooks", link: "/guide/configuration/webhooks" },
-            {
-              text: "Other Options",
-              link: "/guide/configuration/other-options",
-            },
+            { text: "Cache Configuration", link: "/guide/configuration/cache" },
+            { text: "Queue Setup", link: "/guide/configuration/queue" },
+            { text: "Metrics & Monitoring", link: "/guide/configuration/metrics" },
+            { text: "Rate Limiting", link: "/guide/configuration/rate-limiter" },
+            { text: "SSL/TLS Setup", link: "/guide/configuration/ssl" },
           ],
         },
         {
           text: "Advanced Usage",
           collapsed: false,
           items: [
-            { text: "Deployment", link: "/guide/deployment" },
-            { text: "Monitoring", link: "/guide/monitoring" },
-            { text: "Troubleshooting", link: "/guide/troubleshooting" },
+            { text: "Production Deployment", link: "/guide/deployment" },
+            { text: "Performance Monitoring", link: "/guide/monitoring" },
+            { text: "SSL Configuration", link: "/guide/ssl-configuration" },
             { text: "Performance Benchmarks", link: "/guide/performance-benchmarks" },
           ],
         },
@@ -79,72 +135,38 @@ export default defineConfig({
           text: "Core Concepts",
           collapsed: false,
           items: [
-            { text: "Architecture", link: "/concepts/architecture" },
-            {
-              text: "Pusher Compatibility",
-              link: "/concepts/pusher-compatibility",
-            },
-            { text: "Security", link: "/concepts/security" },
-            { text: "Scaling", link: "/concepts/scaling" },
+            { text: "Architecture Overview", link: "/concepts/architecture" },
+            { text: "Pusher Compatibility", link: "/concepts/pusher-compatibility" },
+            { text: "Security Model", link: "/concepts/security" },
+            { text: "Scaling Strategies", link: "/concepts/scaling" },
           ],
         },
       ],
       "/api/": [
         {
-          text: "API Reference",
+          text: "API Documentation",
           collapsed: false,
           items: [
-            { text: "Introduction", link: "/api/" },
-            {
-              text: "HTTP API",
-              link: "/api/http-api",
-              items: [
-                // Nested items for specific HTTP API endpoints
-                {
-                  text: "Trigger Events",
-                  link: "/api/http-api/trigger-events",
-                },
-                { text: "Batch Events", link: "/api/http-api/batch-events" },
-                { text: "Channel Info", link: "/api/http-api/channel-info" },
-                {
-                  text: "User Management",
-                  link: "/api/http-api/user-management",
-                },
-              ],
-            },
+            { text: "API Overview", link: "/api/" },
+            { text: "HTTP API Reference", link: "/api/http-api" },
             { text: "WebSocket API", link: "/api/websocket-api" },
+            { text: "Event Triggering", link: "/api/http-api/trigger-events" },
+            { text: "Batch Events", link: "/api/http-api/batch-events" },
+            { text: "Channel Information", link: "/api/http-api/channel-info" },
+            { text: "User Management", link: "/api/http-api/user-management" },
           ],
         },
       ],
-      '/integrations/': [
+      "/integrations/": [
         {
-          text: 'Getting Started with Integrations',
-          // collapsed: true, // Set to false if you want it open by default
-          items: [
-            { text: 'Introduction', link: '/integrations/' } // Links to docs/integrations/index.md
-          ]
-        },
-        {
-          text: 'Client-Side Libraries',
+          text: "Client Integrations",
           collapsed: false,
           items: [
-            { text: 'Laravel Echo', link: '/integrations/laravel-echo' },
-            { text: 'PusherJS (Standalone)', link: '/integrations/pusher-js' },
-            // Assuming your other-clients.md has a heading like "## Client-Side Libraries (for Subscribing to Events)"
-            { text: 'Mobile & Other Clients', link: '/integrations/other-clients#client-side-libraries-for-subscribing-to-events' }
+            { text: "Integration Guide", link: "/integrations/" },
+            { text: "Laravel Echo Setup", link: "/integrations/laravel-echo" },
+            { text: "PusherJS Integration", link: "/integrations/pusher-js" },
+            { text: "Mobile & Other Clients", link: "/integrations/other-clients" }
           ]
-        },
-      ],
-      "/about/": [
-        {
-          text: "About Sockudo",
-          collapsed: false,
-          items: [
-            { text: "License", link: "/about/license" },
-            { text: "Acknowledgements", link: "/about/acknowledgements" },
-            { text: "Contributing", link: "/advanced/contributing" }, // Moved contributing here as it's more "about" the project
-          ],
-
         },
       ],
     },
@@ -156,8 +178,8 @@ export default defineConfig({
     ],
 
     editLink: {
-      pattern: "https://github.com/RustNSparks/sockudo/edit/main/docs/:path", // Assuming 'main' branch and docs in 'docs' folder
-      text: "Edit this page on GitHub",
+      pattern: "https://github.com/RustNSparks/sockudo/edit/main/docs/:path",
+      text: "Improve this page on GitHub",
     },
 
     footer: {
@@ -165,29 +187,10 @@ export default defineConfig({
       copyright: `Copyright © 2025-${new Date().getFullYear()} RustNSparks & Contributors`,
     },
 
-    // Search Configuration (VitePress Default Algolia or Local Search)
-    // For local search (simpler to set up initially):
     search: {
       provider: "local",
     },
-
-    // If you want to use Algolia (requires setup with Algolia):
-    // algolia: {
-    //   appId: 'YOUR_ALGOLIA_APP_ID',
-    //   apiKey: 'YOUR_ALGOLIA_API_KEY',
-    //   indexName: 'YOUR_ALGOLIA_INDEX_NAME'
-    // },
-
-    // Carbon Ads (Optional)
-    // carbonAds: {
-    //   code: 'YOUR_CARBON_PLACEMENT_CODE',
-    //   placement: 'YOUR_CARBON_PLACEMENT_NAME'
-    // }
   },
 
-  // Markdown processing options
-  markdown: {
-    // lineNumbers: true, // Enable line numbers for code blocks
-    // Options for markdown-it plugins
-  },
+  // Enhanced markdown processing
 });

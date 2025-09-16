@@ -1,0 +1,9 @@
+{
+  "name": "Sockudo Documentation",
+  "short_name": "Sockudo Docs",
+  "description": "High-performance WebSocket server documentation",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#646cff",
+  "background_color": "#ffffff"
+}
