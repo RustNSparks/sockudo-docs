@@ -183,7 +183,6 @@ import Pusher from 'pusher-js';
 
 const echo = new Echo({ /* Sockudo config */ });
 ```
-[**🔗 React Integration Guide**](/integrations/react)
 
 ### Vue.js + Sockudo
 Real-time Vue applications made simple:
@@ -192,7 +191,6 @@ Real-time Vue applications made simple:
 const { listen } = useEcho();
 listen('channel', 'event', handleMessage);
 ```
-[**🔗 Vue Integration Guide**](/integrations/vue)
 
 ## Deployment Options
 
