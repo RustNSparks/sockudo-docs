@@ -144,8 +144,6 @@ Build high-performance chat systems with sub-millisecond message delivery:
 - Multi-room chat with channel isolation
 - Mobile and web client support
 
-[**🔗 Chat Tutorial**](/examples/chat-app)
-
 ### 📊 Live Dashboards  
 Create responsive dashboards with real-time data updates:
 - Stock price feeds and trading platforms
@@ -153,16 +151,12 @@ Create responsive dashboards with real-time data updates:
 - Analytics and metrics visualization
 - System monitoring interfaces
 
-[**🔗 Dashboard Tutorial**](/examples/dashboard)
-
 ### 🔔 Notification Systems
 Implement instant notification delivery:
 - Push notifications to web and mobile
 - Real-time alerts and warnings
 - User-specific notification channels
 - Batch notification processing
-
-[**🔗 Notification Tutorial**](/examples/notifications)
 
 ### 🎮 Real-Time Gaming
 Build multiplayer games with low-latency communication:
