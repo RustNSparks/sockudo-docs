@@ -64,6 +64,13 @@ These options are at the top level of your `config.json`.
 * **Description**: The maximum allowed size for a single WebSocket message payload in kilobytes.
 * **Default Value**: `64`
 
+### `activity_timeout`
+* **JSON Key**: `activity_timeout`
+* **Environment Variable**: `ACTIVITY_TIMEOUT`
+* **Type**: `integer` (u64, seconds)
+* **Description**: Timeout in seconds for client-server activity synchronization. This controls how long the server waits for activity from a client before considering it inactive.
+* **Default Value**: `120` (2 minutes)
+
 **Example (Basic Server Configuration)**:
 ```json
 {
@@ -74,7 +81,8 @@ These options are at the top level of your `config.json`.
   "path_prefix": "/",
   "shutdown_grace_period": 10,
   "user_authentication_timeout": 3600,
-  "websocket_max_payload_kb": 64
+  "websocket_max_payload_kb": 64,
+  "activity_timeout": 120
 }
 ```
 
@@ -87,6 +95,7 @@ export APP_MODE="production"
 export SHUTDOWN_GRACE_PERIOD=30
 export USER_AUTHENTICATION_TIMEOUT=7200
 export WEBSOCKET_MAX_PAYLOAD_KB=128
+export ACTIVITY_TIMEOUT=120
 ```
 
 ## SSL/TLS Configuration (`ssl`)

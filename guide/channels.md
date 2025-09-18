@@ -1,6 +1,6 @@
 # Channels in Sockudo
 
-Channels are the fundamental way to group and filter messages in Sockudo, following the Pusher protocol. Clients subscribe to channels, and events are published to these channels. Sockudo supports three main types of channels with advanced features for scaling and management.
+Channels are the fundamental way to group and filter messages in Sockudo, following the Pusher protocol. Clients subscribe to channels, and events are published to these channels. Sockudo supports four main types of channels with advanced features for scaling and management.
 
 ## Channel Types
 
@@ -59,7 +59,37 @@ privateChannel.bind('new_message', function(data) {
 });
 ```
 
-### 3. Presence Channels
+### 3. Private Cache Channels
+
+-   **Naming Convention:** Must start with `private-cache-`. For example, `private-cache-user-profile-123`, `private-cache-settings-abc`.
+-   **Subscription:** Similar to regular private channels, clients must be authorized to subscribe.
+-   **Features:**
+    -   Automatically caches the last published message
+    -   New subscribers immediately receive the cached message upon successful subscription
+    -   Useful for state synchronization where late-joining clients need the current state
+    -   Cache TTL is configurable via server settings
+-   **Use Cases:** User settings synchronization, live dashboards with current state, configuration distribution, any scenario where subscribers need the "last known state".
+-   **Response Format (v2.7.1+):** When subscribing to a cache channel with existing cached data, the response includes both `channel` and `data` fields for full Pusher compatibility.
+
+**Example (Client-side):**
+```javascript
+// Subscribe to a private cache channel
+const cacheChannel = pusher.subscribe('private-cache-dashboard-state');
+
+// Upon subscription, if there's cached data, you'll immediately receive it
+cacheChannel.bind('pusher:subscription_succeeded', function() {
+  console.log('Successfully subscribed to cache channel');
+  // The cached message (if any) will be delivered automatically
+});
+
+// Bind to receive updates
+cacheChannel.bind('state-update', function(data) {
+  console.log('Dashboard state updated:', data);
+  // This could be either the cached message or a new update
+});
+```
+
+### 4. Presence Channels
 
 -   **Naming Convention:** Must start with `presence-`. For example, `presence-chat-room-xyz`, `presence-collaboration-doc-1`.
 -   **Subscription:** Similar to private channels, clients must be authorized. The authentication response includes user information.

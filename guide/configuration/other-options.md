@@ -258,6 +258,77 @@ DATABASE_REDIS_PASSWORD=redis_password
 AWS_REGION=eu-central-1
 ```
 
+## Logging Configuration (`logging`)
+
+Settings that control the logging output format and behavior.
+
+* **JSON Key (Parent)**: `logging`
+
+### Log Output Format
+
+* **Environment Variable Only**: `LOG_OUTPUT_FORMAT`
+* **Type**: `enum` (string)
+* **Description**: Controls the output format of logs. Must be set as an environment variable at startup.
+* **Default Value**: `"human"`
+* **Possible Values**:
+  * `"human"`: Human-readable format with optional colors
+  * `"json"`: Structured JSON format for log aggregation systems
+
+**Important**: This setting can ONLY be configured via environment variable at startup and cannot be set in the config file due to technical limitations in the tracing library.
+
+### `logging.colors_enabled`
+* **JSON Key**: `colors_enabled`
+* **Environment Variable**: `LOG_COLORS_ENABLED`
+* **Type**: `boolean`
+* **Description**: Enable or disable colors in human-readable log output. Only applies when `LOG_OUTPUT_FORMAT` is `"human"`. Useful for production environments where logs are processed by external systems.
+* **Default Value**: `true`
+
+### `logging.include_target`
+* **JSON Key**: `include_target`
+* **Environment Variable**: `LOG_INCLUDE_TARGET`
+* **Type**: `boolean`
+* **Description**: Include the module target/source in log messages. Helpful for debugging to identify which module generated a log entry.
+* **Default Value**: `true`
+
+**Example (`config.json`)**:
+```json
+{
+  "logging": {
+    "colors_enabled": false,
+    "include_target": true
+  }
+}
+```
+
+**Environment Variables:**
+```bash
+# Set output format (must be set at startup)
+LOG_OUTPUT_FORMAT=json     # JSON format for log aggregation
+LOG_OUTPUT_FORMAT=human    # Human-readable format (default)
+
+# These can be set via config file or environment
+LOG_COLORS_ENABLED=false  # Disable colors for clean log output
+LOG_INCLUDE_TARGET=true    # Include module information in logs
+```
+
+### Production Logging Examples
+
+**For log aggregation systems (Fluentd, Logstash, etc.)**:
+```bash
+LOG_OUTPUT_FORMAT=json ./target/release/sockudo
+```
+
+**For human-readable logs without colors**:
+```bash
+LOG_OUTPUT_FORMAT=human LOG_COLORS_ENABLED=false ./target/release/sockudo
+```
+
+**JSON format benefits**:
+- Single-line JSON objects per log entry
+- No color codes that interfere with parsing
+- Structured data for better filtering and analysis
+- Compatible with log aggregation tools
+
 ## Database Pooling (`database_pooling`)
 
 General settings for database connection pooling, applied to database connections that support pooling.
@@ -323,6 +394,10 @@ Here's a comprehensive example showing all the "other options" configured togeth
     "accept_traffic": {
       "memory_threshold": 0.90
     }
+  },
+  "logging": {
+    "colors_enabled": false,
+    "include_target": true
   },
   "database": {
     "mysql": {

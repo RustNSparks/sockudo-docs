@@ -12,6 +12,17 @@ cargo build --release
 
 The executable will be located at `target/release/sockudo`.
 
+### Performance Optimizations
+
+Starting from version 2.7.3, Sockudo uses **mimalloc** as its memory allocator, providing platform-optimized memory allocation with improved performance characteristics:
+
+- **Reduced memory fragmentation** across long-running deployments
+- **Better multi-threaded performance** for concurrent connections
+- **Lower memory overhead** compared to standard allocators
+- **Automatic platform optimization** for different architectures
+
+This memory allocator is automatically included in release builds and requires no additional configuration.
+
 ### Cross-Compilation
 
 For different target architectures:

@@ -69,10 +69,10 @@ The following pages detail the specific HTTP API endpoints supported by Sockudo:
     * The response body is often JSON. For event publishing, an empty JSON object `{}` is common on success.
     * Errors are indicated by `4xx` or `5xx` status codes with a JSON body describing the error.
         * `400 Bad Request`: Invalid request parameters or body.
-        * `401 Unauthorized`: Authentication failure (e.g., invalid signature, unknown app key).
+        * `401 Unauthorized`: Authentication failure (e.g., invalid signature, unknown app key, expired timestamp).
         * `403 Forbidden`: Authenticated but not authorized for the action (e.g., app disabled, trying to publish to too many channels).
         * `404 Not Found`: Resource not found (e.g., querying a non-existent channel or app).
-        * `413 Payload Too Large`: Request body exceeds configured limits.
+        * `413 Payload Too Large`: Request body or payload exceeds configured limits (returns this instead of 400 for oversized payloads as of v2.7.1).
 
 ## Rate Limiting
 
