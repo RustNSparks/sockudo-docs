@@ -7,14 +7,14 @@ export default defineConfig({
   
   // Enhanced meta tags
   head: [
-     ['script', {}, `
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-TKXKMXDD');
-    `],
-    // Existing favicon
+     ['script', { 
+      src: 'https://cdn.databuddy.cc/databuddy.js',
+      'data-client-id': '5aFTKbNqr8XkSznh3u3F3',
+      'data-enable-batching': 'true',
+      crossorigin: 'anonymous',
+      async: 'true' // boolean attributes should be strings
+    }],
+        // Existing favicon
     ["link", { rel: "icon", href: "/favicon.ico" }],
     
     // SEO meta tags
