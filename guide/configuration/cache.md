@@ -155,6 +155,52 @@ These settings are applicable if `cache.driver` is set to `"redis"` or `"redis-c
 }
 ```
 
+**Example with TLS/SSL for Redis Cluster Cache**:
+```json
+{
+  "cache": {
+    "driver": "redis-cluster",
+    "redis": {
+      "prefix": "myapp_cluster_cache:",
+      "cluster_mode": true
+    }
+  },
+  "database": {
+    "redis": {
+      "cluster_nodes": [
+        {"host": "rediss://node1.secure-cluster.com", "port": 7000},
+        {"host": "rediss://node2.secure-cluster.com", "port": 7001},
+        {"host": "rediss://node3.secure-cluster.com", "port": 7002}
+      ]
+    }
+  }
+}
+```
+
+**Example for AWS Elasticache Cluster with TLS**:
+```json
+{
+  "cache": {
+    "driver": "redis-cluster",
+    "redis": {
+      "prefix": "myapp_cache:",
+      "cluster_mode": true
+    }
+  },
+  "database": {
+    "redis": {
+      "cluster_nodes": [
+        {"host": "rediss://my-cluster.use1.cache.amazonaws.com", "port": 6379}
+      ]
+    }
+  }
+}
+```
+
+::: tip TLS/SSL Support for Redis Cluster
+To enable encrypted connections, specify the `rediss://` protocol in the `host` field of your cluster nodes. The protocol (redis:// or rediss://) takes precedence over the port configuration, allowing you to connect securely to managed Redis Cluster services like AWS Elasticache.
+:::
+
 **Environment Variables for Redis Cache:**
 ```bash
 CACHE_DRIVER=redis

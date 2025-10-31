@@ -138,7 +138,7 @@ These settings are applicable if `adapter.driver` is set to `"redis-cluster"`.
 ### `adapter.cluster.nodes`
 * **JSON Key**: `nodes`
 * **Type**: `array` of `string`
-* **Description**: A list of seed node URLs for the Redis Cluster (e.g., `"redis://127.0.0.1:7000"`).
+* **Description**: A list of seed node URLs for the Redis Cluster. Supports both `redis://` and `rediss://` protocols for TLS/SSL connections (e.g., `"redis://127.0.0.1:7000"` or `"rediss://secure.example.com:7000"`).
 * **Default Value**: `[]` (empty array)
 
 ### `adapter.cluster.prefix`
@@ -177,6 +177,46 @@ These settings are applicable if `adapter.driver` is set to `"redis-cluster"`.
   }
 }
 ```
+
+**Example with TLS/SSL (`config.json`)**:
+```json
+{
+  "adapter": {
+    "driver": "redis-cluster",
+    "cluster": {
+      "nodes": [
+        "rediss://node1.secure-cluster.example.com:7000",
+        "rediss://node2.secure-cluster.example.com:7001",
+        "rediss://node3.secure-cluster.example.com:7002"
+      ],
+      "prefix": "myapp_cluster_adapter:",
+      "request_timeout_ms": 10000,
+      "use_connection_manager": true
+    }
+  }
+}
+```
+
+**Example for AWS Elasticache with TLS**:
+```json
+{
+  "adapter": {
+    "driver": "redis-cluster",
+    "cluster": {
+      "nodes": [
+        "rediss://my-cluster.cache.amazonaws.com:6379"
+      ],
+      "prefix": "myapp_cluster_adapter:",
+      "request_timeout_ms": 10000,
+      "use_connection_manager": true
+    }
+  }
+}
+```
+
+::: tip TLS/SSL Support
+To use encrypted connections with Redis Cluster, specify the `rediss://` protocol in your node URLs instead of `redis://`. This is particularly useful for AWS Elasticache or other managed Redis Cluster services that require encryption in transit.
+:::
 
 ## NATS Adapter (`adapter.nats`)
 

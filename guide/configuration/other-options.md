@@ -187,6 +187,10 @@ This is the global Redis configuration, used by Cache, Queue, Rate Limiter, or A
 - **`name`** (string): Master name for Sentinel. Default: `"mymaster"`
 - **`cluster_nodes`** (array of `ClusterNode` objects, optional): For Redis Cluster setup. Default: `[]`
   - `ClusterNode` object: `{ "host": "127.0.0.1", "port": 7000 }`
+  - The `host` field supports protocol specification for TLS/SSL connections:
+    - Plain: `"127.0.0.1"` (uses `redis://` by default)
+    - With protocol: `"redis://127.0.0.1"` or `"rediss://secure.example.com"` (for TLS)
+    - With port in URL: `"rediss://secure.example.com:7000"` (URL port takes precedence)
 
 ### DynamoDB Settings (`database.dynamodb`)
 Used if `app_manager.driver` is `"dynamodb"`.
